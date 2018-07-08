@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@babel/standalone": "^7.0.0-beta.52",
+    "babel-plugin-transform-react-jsx": "^6.24.1",
+    "create-react-class": "^15.6.3",
     "office-ui-fabric-react": "^6.27.0",
     "react": "^16.4.1",
     "react-dom": "^16.4.1",

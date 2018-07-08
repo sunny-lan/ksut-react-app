@@ -1,21 +1,27 @@
 import React, { Component } from 'react';
 import { Fabric } from 'office-ui-fabric-react/lib/Fabric';
+import {transform} from '@babel/standalone';
+import CreateReactClass  from 'create-react-class';
 import pluginComps from './pluginDependencies';
-import jsx from 'jsx-transform';
 
 const koolscript=`
-    return (class App extends Component {
-        render() {
-            return (
-                <h1>hello</h1>
-            );
-        }
-    });
+
+    render() {
+        const Label=components.Label;
+        const Button=components.DefaultButton;
+        return (<div>
+            <Label>hello</Label>
+            <Button onClick={()=>alert('helo')}>iewhr</Button>
+            </div>
+        );
+    }
 `;
 
 function load(script){
-    script=jsx.fromString(script, {factory:'React.createComponent'});
-    return eval(`((React,Component,components)=>{${script}})`)(React,Component,pluginComps);
+    script=`(React, components)=>{return {${script}};}`;
+    console.log(script);
+    script=transform(script, {plugins:['transform-react-jsx']});
+    return CreateReactClass(eval(script.code)(React, pluginComps));
 }
 
 const Kool=load(koolscript);
