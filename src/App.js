@@ -1,39 +1,38 @@
-import React, { Component } from 'react';
-import { Fabric } from 'office-ui-fabric-react/lib/Fabric';
-import {transform} from '@babel/standalone';
-import CreateReactClass  from 'create-react-class';
-import pluginComps from './pluginDependencies';
+import React, {Component} from 'react';
+import {connect} from 'react-redux';
+import {Fabric} from 'office-ui-fabric-react/lib/Fabric';
+import LoginPage from './components/LoginPage';
+import HomePage from './components/HomePage';
 
-const koolscript=`
-
-    render() {
-        const Label=components.Label;
-        const Button=components.DefaultButton;
-        return (<div>
-            <Label>hello</Label>
-            <Button onClick={()=>alert('helo')}>iewhr</Button>
-            </div>
-        );
+const styles = {
+    app: {
+        height: '100vh'
     }
-`;
-
-function load(script){
-    script=`(React, components)=>{return {${script}};}`;
-    console.log(script);
-    script=transform(script, {plugins:['transform-react-jsx']});
-    return CreateReactClass(eval(script.code)(React, pluginComps));
-}
-
-const Kool=load(koolscript);
+};
 
 class App extends Component {
     render() {
+        let Page;
+        switch (this.props.page) {
+            case 'LOGIN':
+                Page = LoginPage;
+                break;
+            case 'HOME':
+                Page = HomePage;
+                break;
+        }
         return (
-            <Fabric>
-                <Kool/>
+            <Fabric style={styles.app}>
+                <Page/>
             </Fabric>
         );
     }
 }
 
-export default App;
+function mapStateToProps(state) {
+    return {
+        page: state.page,
+    }
+}
+
+export default connect(mapStateToProps)(App);

@@ -10,7 +10,7 @@ function getName(namespaced) {
     return namespaced.substring(namespaced.indexOf(':') + 1);
 }
 
-export default async function connect(url, username, password) {
+export default async function connect(username, password, url = config.defaultServer) {
     const ws = new WebSocket(url);
 
     //websocket wrappers
@@ -23,24 +23,14 @@ export default async function connect(url, username, password) {
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (data.type === 'error')
-                errorHandler(data.error);
+                errorHandler(new Error(data.error));
             callback(data);
         };
     }
 
     function get() {
         return new Promise((resolve, reject) => {
-            reject = (...args) => {
-                ws.onmessage = undefined;
-                reject(...args);
-            };
-            on(data => {
-                try {
-                    resolve(data);
-                } catch (error) {
-                    reject(error);
-                }
-            }, reject);
+            on(resolve, reject);
         });
     }
 
@@ -62,7 +52,7 @@ export default async function connect(url, username, password) {
         type: 'login',
         username, password
     });
-
+    
     //wait for login result
     let response = await get();
     if (response.type !== 'loginSuccess')
@@ -84,26 +74,26 @@ export default async function connect(url, username, password) {
         }
     }, error => emitter.emit('error', error));
 
-    //set up heartbeat
-    ws.isAlive = true;
-    ws.on('pong', () => ws.isAlive = true);
-    const pingTimer = setInterval(() => {
-        if (!ws.isAlive) return terminate();
-        ws.isAlive = false;
-        try {
-            ws.ping();
-        } catch (error) {
-            terminate();
-        }
-    }, config.timeout);
+    //TODO:set up heartbeat
+    // ws.isAlive = true;
+    // ws.on('pong', () => ws.isAlive = true);
+    // const pingTimer = setInterval(() => {
+    //     if (!ws.isAlive) return terminate();
+    //     ws.isAlive = false;
+    //     try {
+    //         ws.ping();
+    //     } catch (error) {
+    //         terminate();
+    //     }
+    // }, config.timeout);
 
-    function terminate() {
-        clearInterval(pingTimer);
-        emitter.emit('disconnect');
-        ws.onclose = function () {
-        }; // disable onclose handler first
-        ws.close();
-    }
+    // function terminate() {
+    //     clearInterval(pingTimer);
+    //     emitter.emit('disconnect');
+    //     ws.onclose = function () {
+    //     }; // disable onclose handler first
+    //     ws.close();
+    // }
 
     //add commands to result object
     return Object.assign(emitter, commands);
