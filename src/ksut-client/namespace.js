@@ -1,3 +1,3 @@
-/**
- * Created by Sunny on 2018-07-09.
- */
+export function namespace(space, name) {
+    return space+':'+name;
+}

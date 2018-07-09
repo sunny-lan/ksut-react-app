@@ -3,12 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "auto-bind": "^1.2.1",
     "create-react-class": "^15.6.3",
     "office-ui-fabric-react": "^6.27.0",
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
     "react-redux": "^5.0.7",
     "redux": "^4.0.0",
+    "redux-logger": "^3.0.6",
     "redux-thunk": "^2.3.0"
   },
   "devDependencies": {

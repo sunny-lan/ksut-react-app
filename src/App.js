@@ -3,6 +3,7 @@ import {connect} from 'react-redux';
 import {Fabric} from 'office-ui-fabric-react/lib/Fabric';
 import LoginPage from './components/LoginPage';
 import HomePage from './components/HomePage';
+import EditableLabel from './components/EditableLabel';
 
 const styles = {
     app: {
@@ -12,20 +13,18 @@ const styles = {
 
 class App extends Component {
     render() {
-        let Page;
+        let page;
         switch (this.props.page) {
             case 'LOGIN':
-                Page = LoginPage;
+                page = <LoginPage/>;
                 break;
             case 'HOME':
-                Page = HomePage;
+                page = <HomePage/>;
                 break;
         }
-        return (
-            <Fabric style={styles.app}>
-                <Page/>
-            </Fabric>
-        );
+        return <Fabric style={styles.app}>
+            {page}
+        </Fabric>
     }
 }
 

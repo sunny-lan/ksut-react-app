@@ -27,11 +27,12 @@ export default function (state = {
                     password: '',
                     isLoading: false,
                 };
-            else break;
+            return state;
         case 'LOGIN_FIELD_CHANGE':
             const nextState = {...state};
             nextState[action.field] = action.newValue;
             return nextState;
+        default:
+            return state;
     }
-    return state;
 }

@@ -243,7 +243,7 @@ Some editors, including Sublime Text, Atom, and Visual Studio Code, provide plug
 
 They are not required for linting. You should see the linter output right in your terminal as well as the browser console. However, if you prefer the lint results to appear right in your editor, there are some extra steps you can do.
 
-You would need to install an ESLint plugin for your editor first. Then, add a file called `.eslintrc` to the project root:
+You would need to install an ESLint plugin for your editor first. Then, add a file called `.eslintrc` to the project rootReducer:
 
 ```js
 {
@@ -267,7 +267,7 @@ Visual Studio Code and WebStorm support debugging out of the box with Create Rea
 
 You would need to have the latest version of [VS Code](https://code.visualstudio.com) and VS Code [Chrome Debugger Extension](https://marketplace.visualstudio.com/items?itemName=msjsdiag.debugger-for-chrome) installed.
 
-Then add the block below to your `launch.json` file and put it inside the `.vscode` folder in your app’s root directory.
+Then add the block below to your `launch.json` file and put it inside the `.vscode` folder in your app’s rootReducer directory.
 
 ```json
 {
@@ -322,7 +322,7 @@ yarn add husky lint-staged prettier
 * `lint-staged` allows us to run scripts on staged files in git. See this [blog post about lint-staged to learn more about it](https://medium.com/@okonetchnikov/make-linting-great-again-f3890e1ad6b8).
 * `prettier` is the JavaScript formatter we will run before commits.
 
-Now we can make sure every file is formatted correctly by adding a few lines to the `package.json` in the project root.
+Now we can make sure every file is formatted correctly by adding a few lines to the `package.json` in the project rootReducer.
 
 Add the following line to `scripts` section:
 
@@ -713,7 +713,7 @@ Inside `index.html`, you can use it like this:
 
 Only files inside the `public` folder will be accessible by `%PUBLIC_URL%` prefix. If you need to use a file from `src` or `node_modules`, you’ll have to copy it there to explicitly specify your intention to make this file a part of the build.
 
-When you run `npm run build`, Create React App will substitute `%PUBLIC_URL%` with a correct absolute path so your project works even if you use client-side routing or host it at a non-root URL.
+When you run `npm run build`, Create React App will substitute `%PUBLIC_URL%` with a correct absolute path so your project works even if you use client-side routing or host it at a non-rootReducer URL.
 
 In JavaScript code, you can use `process.env.PUBLIC_URL` for similar purposes:
 
@@ -812,7 +812,7 @@ To add Flow to a Create React App project, follow these steps:
 
 1. Run `npm install --save flow-bin` (or `yarn add flow-bin`).
 2. Add `"flow": "flow"` to the `scripts` section of your `package.json`.
-3. Run `npm run flow init` (or `yarn flow init`) to create a [`.flowconfig` file](https://flowtype.org/docs/advanced-configuration.html) in the root directory.
+3. Run `npm run flow init` (or `yarn flow init`) to create a [`.flowconfig` file](https://flowtype.org/docs/advanced-configuration.html) in the rootReducer directory.
 4. Add `// @flow` to any files you want to type check (for example, to `src/App.js`).
 
 Now you can run `npm run flow` (or `yarn flow`) to check the files for type errors.
@@ -948,7 +948,7 @@ REACT_APP_SECRET_CODE=abcdef npm start
 
 >Note: this feature is available with `react-scripts@0.5.0` and higher.
 
-To define permanent environment variables, create a file called `.env` in the root of your project:
+To define permanent environment variables, create a file called `.env` in the rootReducer of your project:
 
 ```
 REACT_APP_SECRET_CODE=abcdef
@@ -1087,7 +1087,7 @@ This shouldn’t affect you when developing on `localhost`, but if you develop r
 
 >Invalid Host header
 
-To work around it, you can specify your public development host in a file called `.env.development` in the root of your project:
+To work around it, you can specify your public development host in a file called `.env.development` in the rootReducer of your project:
 
 ```
 HOST=mypublicdevhost.com
@@ -1307,7 +1307,7 @@ Jest will always run all tests on a [continuous integration](#continuous-integra
 
 ### Writing Tests
 
-To create tests, add `it()` (or `test()`) blocks with the name of the test and its code. You may optionally wrap them in `describe()` blocks for logical grouping but this is neither required nor recommended.
+To create tests, add `it()` (or `test()`) blocks with the name of the test and its code. You may optionally commandWaiter them in `describe()` blocks for logical grouping but this is neither required nor recommended.
 
 Jest provides a built-in `expect()` global function for making assertions. A basic test could look like this:
 
@@ -2012,16 +2012,16 @@ When users install your app to the homescreen of their device the default config
 
 ### Building for Relative Paths
 
-By default, Create React App produces a build assuming your app is hosted at the server root.<br>
+By default, Create React App produces a build assuming your app is hosted at the server rootReducer.<br>
 To override this, specify the `homepage` in your `package.json`, for example:
 
 ```js
   "homepage": "http://mywebsite.com/relativepath",
 ```
 
-This will let Create React App correctly infer the root path to use in the generated HTML file.
+This will let Create React App correctly infer the rootReducer path to use in the generated HTML file.
 
-**Note**: If you are using `react-router@^4`, you can root `<Link>`s using the `basename` prop on any `<Router>`.<br>
+**Note**: If you are using `react-router@^4`, you can rootReducer `<Link>`s using the `basename` prop on any `<Router>`.<br>
 More information [here](https://reacttraining.com/react-router/web/api/BrowserRouter/basename-string).<br>
 <br>
 For example:
@@ -2050,9 +2050,9 @@ See [this](https://medium.com/@strid/host-create-react-app-on-azure-986bc40d5bf2
 
 ### [Firebase](https://firebase.google.com/)
 
-Install the Firebase CLI if you haven’t already by running `npm install -g firebase-tools`. Sign up for a [Firebase account](https://console.firebase.google.com/) and create a new project. Run `firebase login` and login with your previous created Firebase account.
+Install the Firebase CLI if you haven’t already by running `npm install -g firebase-tools`. Sign up for a [Firebase account](https://console.firebase.google.com/) and create a new project. Run `firebase loginReducer` and loginReducer with your previous created Firebase account.
 
-Then run the `firebase init` command from your project’s root. You need to choose the **Hosting: Configure and deploy Firebase Hosting sites** and choose the Firebase project you created in the previous step. You will need to agree with `database.rules.json` being created, choose `build` as the public directory, and also agree to **Configure as a single-page app** by replying with `y`.
+Then run the `firebase init` command from your project’s rootReducer. You need to choose the **Hosting: Configure and deploy Firebase Hosting sites** and choose the Firebase project you created in the previous step. You will need to agree with `database.rules.json` being created, choose `build` as the public directory, and also agree to **Configure as a single-page app** by replying with `y`.
 
 ```sh
     === Project Setup
@@ -2142,7 +2142,7 @@ or for a GitHub user page:
   "homepage": "https://myusername.github.io",
 ```
 
-Create React App uses the `homepage` field to determine the root URL in the built HTML file.
+Create React App uses the `homepage` field to determine the rootReducer URL in the built HTML file.
 
 #### Step 2: Install `gh-pages` and add `deploy` to `scripts` in `package.json`
 
@@ -2333,7 +2333,7 @@ BROWSER | :white_check_mark: | :x: | By default, Create React App will open the 
 HOST | :white_check_mark: | :x: | By default, the development web server binds to `localhost`. You may use this variable to specify a different host.
 PORT | :white_check_mark: | :x: | By default, the development web server will attempt to listen on port 3000 or prompt you to attempt the next available port. You may use this variable to specify a different port.
 HTTPS | :white_check_mark: | :x: | When set to `true`, Create React App will run the development server in `https` mode.
-PUBLIC_URL | :x: | :white_check_mark: | Create React App assumes your application is hosted at the serving web server's root or a subpath as specified in [`package.json` (`homepage`)](#building-for-relative-paths). Normally, Create React App ignores the hostname. You may use this variable to force assets to be referenced verbatim to the url you provide (hostname included). This may be particularly useful when using a CDN to host your application.
+PUBLIC_URL | :x: | :white_check_mark: | Create React App assumes your application is hosted at the serving web server's rootReducer or a subpath as specified in [`package.json` (`homepage`)](#building-for-relative-paths). Normally, Create React App ignores the hostname. You may use this variable to force assets to be referenced verbatim to the url you provide (hostname included). This may be particularly useful when using a CDN to host your application.
 CI | :large_orange_diamond: | :white_check_mark: | When set to `true`, Create React App treats warnings as failures in the build. It also makes the test runner non-watching. Most CIs set this flag by default.
 REACT_EDITOR | :white_check_mark: | :x: | When an app crashes in development, you will see an error overlay with clickable stack trace. When you click on it, Create React App will try to determine the editor you are using based on currently running processes, and open the relevant source file. You can [send a pull request to detect your editor of choice](https://github.com/facebookincubator/create-react-app/issues/2636). Setting this environment variable overrides the automatic detection. If you do it, make sure your systems [PATH](https://en.wikipedia.org/wiki/PATH_(variable)) environment variable points to your editor’s bin folder. You can also set it to `none` to disable it completely.
 CHOKIDAR_USEPOLLING | :white_check_mark: | :x: | When set to `true`, the watcher runs in polling mode, as necessary inside a VM. Use this option if `npm start` isn't detecting changes.

@@ -1,6 +1,6 @@
 import EventEmitter from 'events';
 import config from './config';
-import wrap from './wrap';
+import commandWaiter from './commandWaiter';
 
 function getNamespace(namespaced) {
     return namespaced.substring(0, namespaced.indexOf(':'));
@@ -56,19 +56,19 @@ export default async function connect(username, password, url = config.defaultSe
         username, password
     });
 
-    //wait for login result
+    //wait for loginReducer result
     let response = await get();
     if (response.type !== 'loginSuccess')
-        throw new Error('Unknown login error');
+        throw new Error('Unknown loginReducer error');
 
     //create command set
-    const commands = wrap(send);
+    const commands = commandWaiter(send);
 
     //wait for server responses
     const emitter = new EventEmitter();
     on(data => {
         if (data.type === 'commandResponse') {
-            commands._recieve(data);
+            commands.recieve(data);
         } else {
             emitter.emit(data.type, data);
             //also check for write
@@ -80,12 +80,12 @@ export default async function connect(username, password, url = config.defaultSe
     //set up heartbeat
     const pingTimer = setInterval(async () => {
         try {
-            const response = await commands._send({
+            const response = await commands.send({
                 command: 'goodVibrations',
                 args: [false],
             });
             if (response !== '1.129848')
-                throw new Error('tinkle tinkle hoy');
+                terminate(new Error('tinkle tinkle hoy'));
         } catch (error) {
             terminate(error);
         }
@@ -96,7 +96,8 @@ export default async function connect(username, password, url = config.defaultSe
         emitter.emit('disconnect', error);
         ws.close();
     }
-    
+
     //add commands to result object
-    return Object.assign(emitter, commands);
+    emitter.send = commands.send;
+    return emitter;
 }

@@ -1,7 +1,7 @@
-import specs from './specs';
+// import specs from './specs';
 import { timeout } from './config';
 
-function createCommandWaiter(send) {
+export default function createCommandWaiter(send) {
     //keep track of running commands (their resolve and reject functions)
     const openPromises = {};
     let counter = 0;
@@ -30,7 +30,7 @@ function createCommandWaiter(send) {
 
             //wait for result as promise
             return new Promise((resolve, reject) => {
-                //store promise in list of pending commands
+                //store promise in list of pendingText commands
                 openPromises[thisID] = { resolve, reject };
 
                 //cancel command if it hasn't been responded to for a long time
@@ -43,19 +43,19 @@ function createCommandWaiter(send) {
     };
 }
 
-export default function createWrapped(send) {
-    const waiter = createCommandWaiter(send);
-    const result = {
-        _recieve: waiter.recieve,
-        _send: waiter.send,
-    };
-    Object.keys(specs).forEach(namespace =>
-        specs[namespace].forEach(command => {
-            result[namespace] = {};
-            result[namespace][command] = (...args) => waiter.send({
-                command, args
-            });
-        })
-    );
-    return result;
-}
+// export default function createWrapped(send) {
+//     const waiter = createCommandWaiter(send);
+//     const result = {
+//         _recieve: waiter.recieve,
+//         _send: waiter.send,
+//     };
+//     Object.keys(specs).forEach(namespace =>
+//         specs[namespace].forEach(command => {
+//             result[namespace] = {};
+//             result[namespace][command] = (...args) => waiter.send({
+//                 command, args
+//             });
+//         })
+//     );
+//     return result;
+// }

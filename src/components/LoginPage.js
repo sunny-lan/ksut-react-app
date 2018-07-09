@@ -26,37 +26,38 @@ const styles = {
 };
 
 function render(props) {
-    return (
-        <div style={styles.main}>
-            <div style={styles.loginBox}>
-                <h1><Label>Login</Label></h1>
-                <TextField
-                    label="Username"
-                    value={props.username}
-                    onChanged={newValue => props.onFieldChange('username', newValue)}
-                    disabled={props.isLoading}
+    return <div style={styles.main}>
+        <div style={styles.loginBox}>
+            <h1><Label>Login</Label></h1>
+            <TextField
+                label="Username"
+                value={props.username}
+                onChanged={newValue => props.onFieldChange('username', newValue)}
+                disabled={props.isLoading}
+            />
+            <TextField
+                label="Password"
+                value={props.password}
+                onChanged={newValue => props.onFieldChange('password', newValue)}
+                errorMessage={props.errorMessage}
+                disabled={props.isLoading}
+                type="password"
+                onKeyPress={keyPressed => {
+                    if (keyPressed.key === 'Enter')
+                        props.onLogin();
+                }}
+            />
+            {props.isLoading ?
+                <Spinner style={styles.loginButton}/> :
+                <DefaultButton
+                    text='Login'
+                    style={styles.loginButton}
+                    onClick={props.onLogin}
+                    primary={true}
                 />
-                <TextField
-                    label="Password"
-                    value={props.password}
-                    onChanged={newValue => props.onFieldChange('password', newValue)}
-                    errorMessage={props.errorMessage}
-                    disabled={props.isLoading}
-                    type="password"
-                    onEnter={props.onLogin}
-                />
-                {props.isLoading ?
-                    <Spinner style={styles.loginButton}/> :
-                    <DefaultButton
-                        text='Login'
-                        style={styles.loginButton}
-                        onClick={props.onLogin}
-                        primary={true}
-                    />
-                }
-            </div>
+            }
         </div>
-    );
+    </div>
 }
 
 function mapStateToProps(state) {
@@ -65,10 +66,10 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch, ownProps) {
     return {
-        onFieldChange(field, newValue){
+        onFieldChange(field, newValue) {
             dispatch({type: 'LOGIN_FIELD_CHANGE', field, newValue});
         },
-        onLogin(){
+        onLogin() {
             dispatch(login())
         },
     };
