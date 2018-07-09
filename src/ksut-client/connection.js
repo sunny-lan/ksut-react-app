@@ -52,7 +52,7 @@ export default async function connect(username, password, url = config.defaultSe
         type: 'login',
         username, password
     });
-    
+
     //wait for login result
     let response = await get();
     if (response.type !== 'loginSuccess')
@@ -65,7 +65,7 @@ export default async function connect(username, password, url = config.defaultSe
     const emitter = new EventEmitter();
     on(data => {
         if (data.type === 'commandResponse') {
-            commands._messageResponse(data);
+            commands._recieve(data);
         } else {
             emitter.emit(data.type, data);
             //also check for write
@@ -74,26 +74,27 @@ export default async function connect(username, password, url = config.defaultSe
         }
     }, error => emitter.emit('error', error));
 
-    //TODO:set up heartbeat
-    // ws.isAlive = true;
-    // ws.on('pong', () => ws.isAlive = true);
-    // const pingTimer = setInterval(() => {
-    //     if (!ws.isAlive) return terminate();
-    //     ws.isAlive = false;
-    //     try {
-    //         ws.ping();
-    //     } catch (error) {
-    //         terminate();
-    //     }
-    // }, config.timeout);
+    //set up heartbeat
+    const pingTimer = setInterval(async () => {
+        try {
+            const response = await commands._send({
+                command: 'goodVibrations',
+                args: [false],
+            });
+            if (response !== '1.129848')
+                throw new Error('You are on the wrong world line');
+        } catch (error) {
+            terminate(error);
+        }
+    }, config.timeout);
 
-    // function terminate() {
-    //     clearInterval(pingTimer);
-    //     emitter.emit('disconnect');
-    //     ws.onclose = function () {
-    //     }; // disable onclose handler first
-    //     ws.close();
-    // }
+    function terminate(error) {
+        clearInterval(pingTimer);
+        emitter.emit('disconnect', error);
+        ws.onclose = function () {
+        }; // disable onclose handler first
+        ws.close();
+    }
 
     //add commands to result object
     return Object.assign(emitter, commands);
