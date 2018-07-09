@@ -14,12 +14,15 @@ export default async function connect(username, password, url = config.defaultSe
     const ws = new WebSocket(url);
 
     //websocket wrappers
-
     function open() {
-        return new Promise(resolve => ws.onopen = resolve);
+        return new Promise((resolve, reject) => {
+            ws.onopen = resolve;
+            ws.onclose = ws.onerror = () => reject(new Error('Websocket failure'));
+        });
     }
 
     function on(callback, errorHandler) {
+        ws.onclose = ws.onerror = () => errorHandler(new Error('Websocket failure'));
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (data.type === 'error')
@@ -82,7 +85,7 @@ export default async function connect(username, password, url = config.defaultSe
                 args: [false],
             });
             if (response !== '1.129848')
-                throw new Error('You are on the wrong world line');
+                throw new Error('tinkle tinkle hoy');
         } catch (error) {
             terminate(error);
         }
@@ -91,11 +94,9 @@ export default async function connect(username, password, url = config.defaultSe
     function terminate(error) {
         clearInterval(pingTimer);
         emitter.emit('disconnect', error);
-        ws.onclose = function () {
-        }; // disable onclose handler first
         ws.close();
     }
-
+    
     //add commands to result object
     return Object.assign(emitter, commands);
 }

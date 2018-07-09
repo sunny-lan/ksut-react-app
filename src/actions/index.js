@@ -7,6 +7,7 @@ export function login(username, password, url) {
             dispatch({type: 'LOGIN', begin: true});
             const connection = await connect(state.login.username, state.login.password, url);
             dispatch({type: 'LOGIN', success: true, connection});
+            connection.on('error', (error) => dispatch({type: 'LOGIN', error}));
             connection.once('disconnect', () => dispatch({type: 'DISCONNECT'}));
         } catch (error) {
             dispatch({type: 'LOGIN', error});

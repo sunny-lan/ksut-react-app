@@ -1,10 +1,6 @@
 import specs from './specs';
 import { timeout } from './config';
 
-//merge all of specs into single object for ez processing
-const allCommands = Object.keys(specs)
-    .reduce((output, current) => output.concat(Object.keys(specs[current])), []);
-
 function createCommandWaiter(send) {
     //keep track of running commands (their resolve and reject functions)
     const openPromises = {};
@@ -27,6 +23,7 @@ function createCommandWaiter(send) {
 
             //actually send command
             send({
+                type:'command',
                 ...command,
                 id: thisID
             });
@@ -46,16 +43,19 @@ function createCommandWaiter(send) {
     };
 }
 
-export default function createWrapped(send, commandSet = allCommands) {
+export default function createWrapped(send) {
     const waiter = createCommandWaiter(send);
     const result = {
         _recieve: waiter.recieve,
         _send: waiter.send,
     };
-    commandSet.forEach(command => {
-        result[command] = (...args) => waiter.send({
-            command, args
-        });
-    });
+    Object.keys(specs).forEach(namespace =>
+        specs[namespace].forEach(command => {
+            result[namespace] = {};
+            result[namespace][command] = (...args) => waiter.send({
+                command, args
+            });
+        })
+    );
     return result;
 }
