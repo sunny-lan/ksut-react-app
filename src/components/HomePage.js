@@ -16,6 +16,8 @@ export default function render(props) {
     return <div style={styles.main}>
         <Label>hello</Label>
         <ID id="admin"/>
-        <ScriptContainer id="asdfscript"/>
+        <ScriptContainer id="asdfscript" passedProps={{
+            text:'world'
+        }}/>
     </div>
 };

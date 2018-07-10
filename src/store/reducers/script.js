@@ -7,7 +7,8 @@ export default function scriptReducer(state = {}, action) {
     if (action.command !== 'hset' || action.args[0] !== 'script-compiled')
         return state;
     const rp = {};
-    rp[action.args[1]] = createReactClass(eval(action.args[2])(React, components));
+    const scriptID = action.args[1], code = action.args[2];
+    rp[scriptID] = createReactClass(eval(code)(React, components, scriptID));
     return {
         ...state,
         ...rp,

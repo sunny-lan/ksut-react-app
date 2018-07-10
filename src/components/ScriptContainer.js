@@ -26,9 +26,6 @@ class ScriptContainer extends Component {
 function mapStateToProps(state, ownProps) {
     return {
         script: get(state, 'loadedScripts', ownProps.id),
-        passedProps: {
-            id: ownProps.id,
-        },
     };
 }
 
