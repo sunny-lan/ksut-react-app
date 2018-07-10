@@ -1,6 +1,7 @@
 import loginReducer from './login';
 import redisReducer from './redis';
 import {combineReducers} from "redux";
+import scriptReducer from './script';
 
 function pageReducer(state = 'LOGIN', action) {
     switch (action.type) {
@@ -42,7 +43,7 @@ function rootReducer(state = {}, action) {
         ...state,
         login: loginReducer(state.login, action),
     };
-    if (state.connection!==null)return {
+    if (state.connection !== null)return {
         ...state,
         redis: redisReducer(state.redis, action),
     };
@@ -53,8 +54,9 @@ function rootReducer(state = {}, action) {
 }
 
 export default combineReducers({
-    login:loginReducer,
-    redis:redisReducer,
-    page:pageReducer,
-    connection:connectionReducer,
+    login: loginReducer,
+    redis: redisReducer,
+    page: pageReducer,
+    connection: connectionReducer,
+    loadedScripts: scriptReducer,
 });

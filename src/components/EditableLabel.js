@@ -7,10 +7,8 @@ export default class EditableLabel extends Component {
     constructor(props) {
         super(props);
         autoBind(this);
-        this.state = {};
-    }
-
-    componentWillMount(){
+        this._handleCommit = this._handleCommit.bind(this);
+        this.state = {pendingText: null};
         this.props.onLoad();
     }
 
@@ -24,8 +22,11 @@ export default class EditableLabel extends Component {
     }
 
     _handleCommit() {
-        this.props.onCommit(this.state.pendingText);
-        this.setState({});
+        let text = this.state.pendingText;
+        if (!text)
+            text = null;
+        this.props.onCommit(text);
+        this.setState({pendingText: null});
     }
 
     _handleChanged(newValue) {
@@ -35,13 +36,12 @@ export default class EditableLabel extends Component {
     }
 
     render() {
-        if (this.state.pendingText !== undefined)
+        if (this.state.pendingText !== null)
             return <TextField
                 value={this.state.pendingText}
                 onBlur={this._handleCommit}
                 onKeyPress={this._handleKeyPressed}
                 onChanged={this._handleChanged}
-                borderless
             />;
         else
             return <Label onClick={this._handleLabelClick}>

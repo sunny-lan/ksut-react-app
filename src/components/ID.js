@@ -1,14 +1,7 @@
 import {connect} from 'react-redux';
 import EditableLabel from './EditableLabel';
 import {fetchAndSubscribe, write} from '../actions';
-
-function get(obj, ...keys) {
-    for (let i = 0; i < keys.length; i++) {
-        if (obj === undefined)return obj;
-        obj = obj[keys[i]];
-    }
-    return obj;
-}
+import {get} from '../util';
 
 function mapStateToProps(state, ownProps) {
     return {
