@@ -1,7 +1,9 @@
+import {combineReducers} from 'redux';
+import reduceReducers from 'reduce-reducers';
 import loginReducer from './login';
 import redisReducer from './redis';
-import {combineReducers} from "redux";
 import scriptReducer from './script';
+import subscriptionReducer from './subscriptions';
 
 function pageReducer(state = 'LOGIN', action) {
     switch (action.type) {
@@ -29,34 +31,24 @@ function connectionReducer(state = null, action) {
     }
 }
 
-function rootReducer(state = {}, action) {
-    state = {
-        ...state,
-        page: pageReducer(state.page, action),
-        connection: connectionReducer(state.constructor, action),
-    };
-    if (state.page === 'HOME') state = {
-        ...state,
-        login: undefined,
-    };
-    else if (state.page === 'LOGIN') state = {
-        ...state,
-        login: loginReducer(state.login, action),
-    };
+const lolReducer = combineReducers({
+    login: loginReducer,
+    page: pageReducer,
+    connection: connectionReducer,
+    redis: redisReducer,
+    loadedScripts: scriptReducer,
+});
+
+
+export default function subR(state = {}, action) {
+    const {login, page, connection, redis, loadedScripts} = state;
+    state = lolReducer({login, page, connection, redis, loadedScripts}, action);
     if (state.connection !== null)return {
         ...state,
-        redis: redisReducer(state.redis, action),
+        subscriptions: subscriptionReducer(state.subscriptions, action),
     };
     else return {
         ...state,
-        redis: undefined,
-    }
+        subscriptions: undefined,
+    };
 }
-
-export default combineReducers({
-    login: loginReducer,
-    redis: redisReducer,
-    page: pageReducer,
-    connection: connectionReducer,
-    loadedScripts: scriptReducer,
-});

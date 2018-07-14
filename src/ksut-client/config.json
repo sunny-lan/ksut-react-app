@@ -1,5 +1,5 @@
 {
   "version": 3,
   "timeout": 1000,
-  "defaultServer": "ws://localhost:8080/"
+  "defaultServer": "ws://cryptic-chamber-92728.herokuapp.com/"
 }

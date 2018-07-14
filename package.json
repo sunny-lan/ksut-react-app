@@ -7,11 +7,14 @@
     "create-react-class": "^15.6.3",
     "office-ui-fabric-react": "^6.27.0",
     "react": "^16.4.1",
+    "react-contextmenu": "latest",
     "react-dom": "^16.4.1",
     "react-redux": "^5.0.7",
+    "reduce-reducers": "^0.3.0",
     "redux": "^4.0.0",
     "redux-logger": "^3.0.6",
-    "redux-thunk": "^2.3.0"
+    "redux-thunk": "^2.3.0",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "react-scripts": "1.1.4",

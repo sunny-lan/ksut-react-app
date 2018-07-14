@@ -1,7 +1,7 @@
 export default function (state = {
-    isLoading: false,
-    username: '',
-    password: '',
+    loading: false,
+    username: 'admin',
+    password: 'pass',
     errorMessage: ''
 }, action) {
     switch (action.type) {
@@ -9,7 +9,7 @@ export default function (state = {
             if (action.begin)
                 return {
                     ...state,
-                    isLoading: true,
+                    loading: true,
                     errorMessage: '',
                 };
             else if (action.error) {
@@ -18,14 +18,14 @@ export default function (state = {
                 return {
                     ...state,
                     errorMessage: action.error,
-                    isLoading: false,
+                    loading: false,
                 };
             } else if (action.success)
                 return {
                     ...state,
                     username: '',
                     password: '',
-                    isLoading: false,
+                    loading: false,
                 };
             return state;
         case 'LOGIN_FIELD_CHANGE':

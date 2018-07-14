@@ -11,10 +11,11 @@ export default {
     read: {
         get: ['set', (result, key) => [key, result]],
         hget: ['hset', (result, key, field) => [key, field, result]],
-        hkeys: ['_keys', (keys) => [keys]],
+        hkeys: ['_hkeys', (result, key) => [key, result]],
     },
     write: {
         set: 0,
-        hset: 0
+        hset: 0,
+        _hkeys: 0,
     },
 };

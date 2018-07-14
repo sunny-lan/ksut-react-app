@@ -33,21 +33,21 @@ function render(props) {
                 label="Username"
                 value={props.username}
                 onChanged={newValue => props.onFieldChange('username', newValue)}
-                disabled={props.isLoading}
+                disabled={props.loading}
             />
             <TextField
                 label="Password"
                 value={props.password}
                 onChanged={newValue => props.onFieldChange('password', newValue)}
                 errorMessage={props.errorMessage}
-                disabled={props.isLoading}
+                disabled={props.loading}
                 type="password"
                 onKeyPress={keyPressed => {
                     if (keyPressed.key === 'Enter')
                         props.onLogin();
                 }}
             />
-            {props.isLoading ?
+            {props.loading ?
                 <Spinner style={styles.loginButton}/> :
                 <DefaultButton
                     text='Login'

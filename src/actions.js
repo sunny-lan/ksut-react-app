@@ -1,21 +1,24 @@
 import connect from './ksut-client/connection';
 import specs from './ksut-client/specs';
 import {namespace} from './ksut-client/namespace';
+import {coalesce, get} from './util';
 
-export function wrapErrorHandler(callback, type) {
+export function wrapErrorHandler(callback, type, subType) {
     return (dispatch, ...args) => {
-        (async () => callback(dispatch, ...args))().catch(error =>{dispatch({type, error})});
+        (async () => callback(dispatch, ...args))().catch(error => {
+            dispatch({type, subType, error})
+        });
     }
 }
 
 export function login(url) {
     return wrapErrorHandler(async (dispatch, getState) => {
-        const state = getState();
         dispatch({type: 'LOGIN', begin: true});
+        const state = getState();
         const connection = await connect(state.login.username, state.login.password, url);
         dispatch({type: 'LOGIN', success: true, connection});
         connection.once('disconnect', (error) => dispatch({type: 'DISCONNECT', error}));
-        connection.on('error', (error) => dispatch({type: 'CONNECTION_ERROR', error}));
+        connection.once('error', (error) => dispatch({type: 'DISCONNECT', error}));
         //TODO maybe should move to subscribe function
         connection.on('write', (key, command) => dispatch({type: 'REDIS', ...command}));
     }, 'LOGIN');
@@ -48,15 +51,58 @@ export function fetchIntoStore(cmdObj) {
     }, 'REDIS');
 }
 
+function getSubCount(getState, channel) {
+    return coalesce(get(getState(),'subscriptions',channel), 0);
+}
+
+export function subscribe(channel) {
+    return wrapErrorHandler(async (dispatch, getState) => {
+        //only subscribe if only already subscribed
+        if (getSubCount(getState, channel) === 0)
+            channel = await getState().connection.send({
+                command: namespace('redis', 'subscribe'),
+                args: [channel]
+            });
+
+        dispatch({type: 'SUBSCRIBE', channel});
+    }, 'REDIS');
+}
+
+export function unsubscribe(channel) {
+    return wrapErrorHandler(async (dispatch, getState) => {
+        dispatch({type: 'UNSUBSCRIBE', channel});
+
+        //only unsubscribe if all subscribers are gone
+        if (getSubCount(getState, channel) === 0)
+            channel = await getState().connection.send({
+                command: namespace('redis', 'unsubscribe'),
+                args: [channel]
+            });
+    }, 'REDIS');
+}
+
 export function fetchAndSubscribe(cmdObj) {
     return wrapErrorHandler(async (dispatch, getState) => {
-        const commandInverse = specs.read[cmdObj.command][0];
-        //fetch
-        dispatch(fetchIntoStore(cmdObj));
+        const commandInverse = specs.read[cmdObj.command][0],
+            channel = namespace('write', cmdObj.args[specs.write[commandInverse]]);
+
+        //fetch (only if not subscribed)
+        if (getSubCount(getState, channel) === 0)
+            dispatch(fetchIntoStore(cmdObj));
+
         //subscribe
-        await getState().connection.send({
-            command: namespace('redis', 'subscribe'),
-            args: [namespace('write', cmdObj.args[specs.write[commandInverse]])]
-        });
+        dispatch(subscribe(channel));
     }, 'REDIS');
+}
+
+export function compile(id) {
+    return wrapErrorHandler(async (dispatch, getState) => {
+        dispatch({type: 'SCRIPT_COMPILE', begin: true, id});
+        const state = getState();
+        await state.connection.send({
+            command: 'script:compile',
+            args: [id, get(state, 'loadedScripts', id, 'code')],
+        });
+        dispatch({type: 'SCRIPT_COMPILE', success: true, id});
+    }, 'SCRIPT_COMPILE');
 }

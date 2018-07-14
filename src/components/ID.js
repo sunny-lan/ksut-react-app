@@ -1,7 +1,8 @@
 import {connect} from 'react-redux';
 import EditableLabel from './EditableLabel';
-import {fetchAndSubscribe, write} from '../actions';
+import {fetchAndSubscribe, write, unsubscribe} from '../actions';
 import {get} from '../util';
+import {namespace} from '../ksut-client/namespace';
 
 function mapStateToProps(state, ownProps) {
     return {
@@ -22,6 +23,9 @@ function mapDispatchToProps(dispatch, ownProps) {
                 command: 'hset',
                 args: ['name', ownProps.id, text]
             }))
+        },
+        onUnload(){
+            dispatch(unsubscribe(namespace('write', 'script-compiled')));
         },
     };
 }

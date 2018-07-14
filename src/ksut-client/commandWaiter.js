@@ -7,11 +7,17 @@ export default function createCommandWaiter(send) {
     let counter = 0;
     return {
         recieve(response) {
+            if(!openPromises[response.id])
+                return; //already got rejected/accepted
             //when server responds, close the corresponding promise
-            if (response.subType === 'result')
+            if (response.subType === 'result') {
                 openPromises[response.id].resolve(response.result);
-            else if (response.subType === 'error')
+                delete openPromises[response.id];
+            }
+            else if (response.subType === 'error') {
                 openPromises[response.id].reject(response.error);
+                delete openPromises[response.id];
+            }
             else
                 console.error('Could not understand server message response');
         },

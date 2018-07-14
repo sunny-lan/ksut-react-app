@@ -1,19 +1,24 @@
-import React, {Component} from 'react';
+import React from 'react';
+import createReactClass from 'create-react-class';
 import {connect} from 'react-redux';
 import {get} from '../util';
-import {fetchIntoStore} from '../actions';
+import {fetchAndSubscribe, unsubscribe} from '../actions';
+import {namespace} from '../ksut-client/namespace';
 
-class ScriptContainer extends Component {
-    constructor(props){
-        super(props);
-        this.props.loadData();
-    }
+const ScriptContainer = createReactClass({
+    componentDidMount(){
+        this.props.onLoad();
+    },
+
+    componentWillUnmount(){
+        this.props.onUnload();
+    },
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.id !== this.props.id) {
-            nextProps.loadData();
+            nextProps.onLoad();
         }
-    }
+    },
 
     render() {
         const Component = this.props.script;
@@ -21,21 +26,24 @@ class ScriptContainer extends Component {
             return <Component {...this.props.passedProps}/>;
         else return <div/>;
     }
-}
+});
 
 function mapStateToProps(state, ownProps) {
     return {
-        script: get(state, 'loadedScripts', ownProps.id),
+        script: get(state, 'loadedScripts', ownProps.id, 'compiled'),
     };
 }
 
 function mapDispatchToProps(dispatch, ownProps) {
     return {
-        loadData(){
-            dispatch(fetchIntoStore({
+        onLoad(){
+            dispatch(fetchAndSubscribe({
                 command: 'hget',
                 args: ['script-compiled', ownProps.id]
             }));
+        },
+        onUnload(){
+            dispatch(unsubscribe(namespace('write', 'script-compiled')));
         },
     }
 }

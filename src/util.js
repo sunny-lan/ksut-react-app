@@ -5,3 +5,9 @@ export function get(obj, ...keys) {
     }
     return obj;
 }
+
+export function coalesce(...args){
+    for(let i=0;i<args.length;i++)
+        if(args[i]!==undefined)
+            return args[i];
+}
