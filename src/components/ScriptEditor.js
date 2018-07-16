@@ -1,12 +1,16 @@
 import React from 'react';
 import createReactClass from 'create-react-class';
 import {connect} from 'react-redux';
-import {TextField} from 'office-ui-fabric-react/lib/TextField';
 import {DefaultButton} from 'office-ui-fabric-react/lib/Button';
 import {Spinner} from 'office-ui-fabric-react/lib/Spinner';
 import {get} from '../util';
 import {namespace} from '../ksut-client/namespace';
 import {compile, fetchAndSubscribe, unsubscribe} from '../actions';
+import AceEditor from 'react-ace';
+import brace from 'brace';
+
+import 'brace/mode/javascript';
+import 'brace/theme/solarized_light';
 
 const styles = {
     main: {
@@ -16,11 +20,11 @@ const styles = {
         width: '100%',
     },
     codeEditor: {
+        width:'100%',
         flexGrow: '1',
-        maxWidth: '100%',
     },
     compileButton: {
-        marginTop: '10px',
+        marginTop: '0px',
     },
 };
 
@@ -36,17 +40,27 @@ const ScriptEditor = createReactClass({
     render(){
         //TODO split loading button into separate file
         return <div style={styles.main}>
-            {this.props.diverged && <div>Unsaved changes (local & server version different)</div>}
-            <TextField
-                style={styles.codeEditor}
-                multiline
-                autoAdjustHeight
-                resizable={false}
+            <AceEditor
+                mode="javascript"
+                theme="solarized_light"
+                name="sdfkjh"
+                onChange={this.props.onChanged}
                 value={this.props.code}
-                errorMessage={this.props.errorMessage}
+                fontSize={14}
+                showPrintMargin={false}
+                showGutter={true}
+                highlightActiveLine={true}
                 disabled={this.props.loading}
-                onChanged={this.props.onChanged}
+                style={styles.codeEditor}
+                setOptions={{
+                    enableBasicAutocompletion: true,
+                    enableLiveAutocompletion: true,
+                    enableSnippets: false,
+                    showLineNumbers: true,
+                    tabSize: 4,
+                }}
             />
+            {this.props.diverged && <div>Unsaved changes (local & server version different)</div>}
             {this.props.loading ?
                 <Spinner style={styles.compileButton}/> :
                 <DefaultButton

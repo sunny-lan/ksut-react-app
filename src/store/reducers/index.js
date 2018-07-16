@@ -1,5 +1,4 @@
 import {combineReducers} from 'redux';
-import reduceReducers from 'reduce-reducers';
 import loginReducer from './login';
 import redisReducer from './redis';
 import scriptReducer from './script';

@@ -39,11 +39,11 @@ function mapDispatchToProps(dispatch, ownProps) {
         onLoad(){
             dispatch(fetchAndSubscribe({
                 command: 'hget',
-                args: ['script-compiled', ownProps.id]
+                args: ['script-client', ownProps.id]
             }));
         },
         onUnload(){
-            dispatch(unsubscribe(namespace('write', 'script-compiled')));
+            dispatch(unsubscribe(namespace('write', 'script-client')));
         },
     }
 }

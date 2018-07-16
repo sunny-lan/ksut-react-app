@@ -3,10 +3,10 @@ import specs from './ksut-client/specs';
 import {namespace} from './ksut-client/namespace';
 import {coalesce, get} from './util';
 
-export function wrapErrorHandler(callback, type, subType) {
+export function wrapErrorHandler(callback, type, otherData) {
     return (dispatch, ...args) => {
         (async () => callback(dispatch, ...args))().catch(error => {
-            dispatch({type, subType, error})
+            dispatch({type, ...otherData, error})
         });
     }
 }
@@ -37,7 +37,8 @@ export function write(cmdObj) {
     }, 'REDIS');
 }
 
-export function fetchIntoStore(cmdObj) {
+//fetches even if local version is already subscribed
+export function forceFetchIntoStore(cmdObj) {
     return wrapErrorHandler(async (dispatch, getState) => {
         //run command
         const result = await getState().connection.send(redisify(cmdObj));
@@ -51,8 +52,21 @@ export function fetchIntoStore(cmdObj) {
     }, 'REDIS');
 }
 
+//fetch only if not subscribed
+export function fetchIntoStore(cmdObj) {
+    return wrapErrorHandler(async (dispatch, getState) => {
+        const commandInverse = specs.read[cmdObj.command][0],
+            channel = namespace('write', cmdObj.args[specs.write[commandInverse]]);
+
+        if (getSubCount(getState, channel) > 0)
+            return;
+
+        dispatch(forceFetchIntoStore(cmdObj));
+    }, 'REDIS');
+}
+
 function getSubCount(getState, channel) {
-    return coalesce(get(getState(),'subscriptions',channel), 0);
+    return coalesce(get(getState(), 'subscriptions', channel), 0);
 }
 
 export function subscribe(channel) {
@@ -86,9 +100,7 @@ export function fetchAndSubscribe(cmdObj) {
         const commandInverse = specs.read[cmdObj.command][0],
             channel = namespace('write', cmdObj.args[specs.write[commandInverse]]);
 
-        //fetch (only if not subscribed)
-        if (getSubCount(getState, channel) === 0)
-            dispatch(fetchIntoStore(cmdObj));
+        dispatch(fetchIntoStore(cmdObj));
 
         //subscribe
         dispatch(subscribe(channel));
@@ -104,5 +116,5 @@ export function compile(id) {
             args: [id, get(state, 'loadedScripts', id, 'code')],
         });
         dispatch({type: 'SCRIPT_COMPILE', success: true, id});
-    }, 'SCRIPT_COMPILE');
+    }, 'SCRIPT_COMPILE', {id});
 }

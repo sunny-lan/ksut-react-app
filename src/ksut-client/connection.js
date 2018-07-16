@@ -81,7 +81,7 @@ export default async function connect(username, password, url = config.defaultSe
     const pingTimer = setInterval(async () => {
         try {
             const response = await commands.send({
-                command: 'goodVibrations',
+                command: 'good:vibrations',
                 args: [false],
             });
             if (response !== '1.129848')

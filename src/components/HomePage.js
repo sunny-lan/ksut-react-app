@@ -51,9 +51,9 @@ const HomePage = createReactClass({
         let content;
         if (this.state.currentScript) {
             if (this.state.editing)
-                content = <ScriptEditor style={styles.content} id={this.state.currentScript}/>;
+                content = <ScriptEditor id={this.state.currentScript}/>;
             else
-                content = <ScriptContainer style={styles.content} id={this.state.currentScript}/>;
+                content = <ScriptContainer id={this.state.currentScript}/>;
         }
         return <div style={styles.main}>
             <Sidebar
@@ -61,7 +61,7 @@ const HomePage = createReactClass({
                 onScriptEdit={this.handleScriptEdit}
                 onCreateScript={this.handleCreateScript}
             />
-            {content}
+            <div style={styles.content}>{content}</div>
         </div>
     },
 });

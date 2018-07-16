@@ -25,7 +25,7 @@ function mapDispatchToProps(dispatch, ownProps) {
             }))
         },
         onUnload(){
-            dispatch(unsubscribe(namespace('write', 'script-compiled')));
+            dispatch(unsubscribe(namespace('write', 'script-client')));
         },
     };
 }

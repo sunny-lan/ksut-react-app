@@ -11,7 +11,7 @@ import {IconButton} from 'office-ui-fabric-react/lib/Button';
 
 const style = {
     main: {
-        width: "208px",
+        width: "408px",
         boxSizing: "border-box",
         border: "1px solid #EEE",
         overflowY: "auto",
@@ -79,7 +79,7 @@ const Sidebar = createReactClass({
 });
 
 function mapStateToProps(state) {
-    let scripts = get(state, 'redis', 'script-compiled');
+    let scripts = get(state, 'redis', 'script-client');
     if (scripts)
         scripts = Object.keys(scripts).map(key => {
             return {
@@ -96,11 +96,11 @@ function mapDispatchToProps(dispatch) {
         onLoad(){
             dispatch(fetchAndSubscribe({
                 command: 'hkeys',
-                args: ['script-compiled']
+                args: ['script-client']
             }));
         },
         onUnload(){
-            dispatch(unsubscribe(namespace('write', 'script-compiled')));
+            dispatch(unsubscribe(namespace('write', 'script-client')));
         },
     };
 }

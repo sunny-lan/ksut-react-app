@@ -11,3 +11,7 @@ export function coalesce(...args){
         if(args[i]!==undefined)
             return args[i];
 }
+
+export function wait(delay){
+    return new Promise((resolve, reject)=>setTimeout(resolve, delay));
+}
