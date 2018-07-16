@@ -2,8 +2,7 @@ import React from 'react';
 import createReactClass from 'create-react-class';
 import {connect} from 'react-redux';
 import {get} from '../util';
-import {fetchAndSubscribe, unsubscribe} from '../actions';
-import {namespace} from '../ksut-client/namespace';
+import {fetch} from '../actions';
 
 const ScriptContainer = createReactClass({
     componentDidMount(){
@@ -21,7 +20,7 @@ const ScriptContainer = createReactClass({
     },
 
     render() {
-        const Component = this.props.script;
+        const Component = this.props.component;
         if (Component)
             return <Component {...this.props.passedProps}/>;
         else return <div/>;
@@ -30,20 +29,17 @@ const ScriptContainer = createReactClass({
 
 function mapStateToProps(state, ownProps) {
     return {
-        script: get(state, 'loadedScripts', ownProps.id, 'compiled'),
+        component: get(state, 'scripts', ownProps.id, 'component'),
     };
 }
 
 function mapDispatchToProps(dispatch, ownProps) {
     return {
         onLoad(){
-            dispatch(fetchAndSubscribe({
-                command: 'hget',
-                args: ['script-client', ownProps.id]
-            }));
+            dispatch(fetch(ownProps.id));
         },
         onUnload(){
-            dispatch(unsubscribe(namespace('write', 'script-client')));
+            //do nothing
         },
     }
 }

@@ -1,51 +1,38 @@
 import dependencies from '../../pluginDependencies';
 
-function singleReducer(state = {}, action) {
+export default function code(state = {}, action) {
+    const newScript = {...state[action.id]};
     switch (action.type) {
-        case 'SCRIPT_EDIT'://also used for opening code
-            return {
-                ...state,
-                code: action.newCode,
-            };
+        case 'SCRIPT_FETCH':
+            if(action.success) {
+                //nothing changed
+                if (newScript.compiled === action.compiled)
+                    return state;
+                newScript.compiled = action.compiled;
+                newScript.component = eval(action.compiled)(dependencies);
+            }else if(action.error){
+                //TODO add loading handling
+            }
+            break;
+        case 'SCRIPT_EDIT':
+            newScript.code = action.newCode;
+            break;
         case 'SCRIPT_COMPILE':
             if (action.begin)
-                return {
-                    ...state,
-                    loading: true,
-                };
-            else if (action.success)
-                return {
-                    ...state,
-                    errorMessage: undefined,
-                    loading: false,
-                };
-            else if (action.error)
-                return {
-                    ...state,
-                    errorMessage: action.error,
-                    loading: false,
-                };
-            return state;
+                newScript.loading = true;
+            else if (action.success) {
+                newScript.loading = false;
+                newScript.errorMessage = undefined;
+            } else if (action.error) {
+                newScript.loading = false;
+                newScript.errorMessage = action.error.message;
+            }
+            break;
         default:
             return state;
     }
+    const newState = {...state};
+    newState[action.id] = newScript;
+    return newState;
 }
 
-export default function scriptReducer(state = {}, action) {
-    if(action.type==='REDIS'){
-        //TODO refactor into separate SCRIPT_LOAD action
-        if (action.command !== 'hset' || action.args[0] !== 'script-client')
-            return state;
-        const scriptID = action.args[1], code = action.args[2];
-        const rp = {...state};
-        rp[scriptID]={
-            ...state[scriptID],
-            compiled: eval(code)(dependencies, scriptID),
-        };
-        return rp;
-    }
-    if (!action.id) return state;
-    const rp = {...state};
-    rp[action.id] = singleReducer(state[action.id], action);
-    return rp;
-}

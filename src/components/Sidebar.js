@@ -3,7 +3,6 @@ import createReactClass from 'create-react-class';
 import {connect} from 'react-redux';
 import {Nav} from 'office-ui-fabric-react/lib/Nav';
 import ID from './ID';
-import {Label} from "office-ui-fabric-react/lib/components/Label";
 import {get} from '../util';
 import {fetchAndSubscribe, unsubscribe} from '../actions';
 import {namespace} from '../ksut-client/namespace';
@@ -79,15 +78,12 @@ const Sidebar = createReactClass({
 });
 
 function mapStateToProps(state) {
-    let scripts = get(state, 'redis', 'script-client');
-    if (scripts)
-        scripts = Object.keys(scripts).map(key => {
+    return {
+        scriptLinks: Object.keys(get(state, 'redis', 'script-code')||{}).map(key => {
             return {
                 name: key, type: 'SCRIPT'
             };
-        });
-    return {
-        scriptLinks: scripts||{},
+        }),
     };
 }
 
@@ -96,11 +92,11 @@ function mapDispatchToProps(dispatch) {
         onLoad(){
             dispatch(fetchAndSubscribe({
                 command: 'hkeys',
-                args: ['script-client']
+                args: ['script-code']
             }));
         },
         onUnload(){
-            dispatch(unsubscribe(namespace('write', 'script-client')));
+            dispatch(unsubscribe(namespace('write', 'script-code')));
         },
     };
 }

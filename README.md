@@ -687,7 +687,7 @@ An alternative way of handling static assets is described in the next section.
 ### Changing the HTML
 
 The `public` folder contains the HTML file so you can tweak it, for example, to [set the page title](#changing-the-page-title).
-The `<script>` tag with the compiled code will be added to it automatically during the build process.
+The `<component>` tag with the compiled code will be added to it automatically during the build process.
 
 ### Adding Assets Outside of the Module System
 
@@ -739,14 +739,14 @@ The `public` folder is useful as a workaround for a number of less common cases:
 
 * You need a file with a specific name in the build output, such as [`manifest.webmanifest`](https://developer.mozilla.org/en-US/docs/Web/Manifest).
 * You have thousands of images and need to dynamically reference their paths.
-* You want to include a small script like [`pace.js`](http://github.hubspot.com/pace/docs/welcome/) outside of the bundled code.
-* Some library may be incompatible with Webpack and you have no other option but to include it as a `<script>` tag.
+* You want to include a small component like [`pace.js`](http://github.hubspot.com/pace/docs/welcome/) outside of the bundled code.
+* Some library may be incompatible with Webpack and you have no other option but to include it as a `<component>` tag.
 
-Note that if you add a `<script>` that declares global variables, you also need to read the next section on using them.
+Note that if you add a `<component>` that declares global variables, you also need to read the next section on using them.
 
 ## Using Global Variables
 
-When you include a script in the HTML file that defines global variables and try to use one of these variables in the code, the linter will complain because it cannot see the definition of the variable.
+When you include a component in the HTML file that defines global variables and try to use one of these variables in the code, the linter will complain because it cannot see the definition of the variable.
 
 You can avoid this by reading the global variable explicitly from the `window` object, for example:
 
@@ -1257,9 +1257,9 @@ Similarly to the previous section, you can leave some placeholders in the HTML t
 <!doctype html>
 <html lang="en">
   <head>
-    <script>
+    <component>
       window.SERVER_DATA = __SERVER_DATA__;
-    </script>
+    </component>
 ```
 
 Then, on the server, you can replace `__SERVER_DATA__` with a JSON of real data right before sending the response. The client code can then read `window.SERVER_DATA` to use it. **Make sure to [sanitize the JSON before sending it to the client](https://medium.com/node-security/the-most-common-xss-vulnerability-in-react-js-applications-2bdffbcc1fa0) as it makes your app vulnerable to XSS attacks.**
@@ -1537,7 +1537,7 @@ node_js:
 cache:
   directories:
     - node_modules
-script:
+component:
   - npm run build
   - npm test
 ```
@@ -1658,7 +1658,7 @@ Open the following in Chrome
 about:inspect
 ```
 
-After opening that link, the Chrome Developer Tools will be displayed. Select `inspect` on your process and a breakpoint will be set at the first line of the react script (this is done simply to give you time to open the developer tools and to prevent Jest from executing before you have time to do so). Click the button that looks like a "play" button in the upper right hand side of the screen to continue execution. When Jest executes the test that contains the debugger statement, execution will pause and you can examine the current scope and call stack.
+After opening that link, the Chrome Developer Tools will be displayed. Select `inspect` on your process and a breakpoint will be set at the first line of the react component (this is done simply to give you time to open the developer tools and to prevent Jest from executing before you have time to do so). Click the button that looks like a "play" button in the upper right hand side of the screen to continue execution. When Jest executes the test that contains the debugger statement, execution will pause and you can examine the current scope and call stack.
 
 >Note: the --runInBand cli option makes sure Jest runs test in the same process rather than spawning processes for individual tests. Normally Jest parallelizes test runs across processes but it is hard to debug many processes at the same time.
 
@@ -1832,7 +1832,7 @@ changes you've made locally.
 
 1. If you *need* to test your offline-first service worker locally, build
 the application (using `npm run build`) and run a simple http server from your
-build directory. After running the build script, `create-react-app` will give
+build directory. After running the build component, `create-react-app` will give
 instructions for one way to test your production build locally and the [deployment instructions](#deployment) have
 instructions for using other methods. *Be sure to always use an
 incognito window to avoid complications with your browser cache.*
@@ -1911,7 +1911,7 @@ Then in `package.json`, add the following line to `scripts`:
 ```
 
 Then to analyze the bundle run the production build then run the analyze
-script.
+component.
 
 ```
 npm run build
@@ -2170,7 +2170,7 @@ Add the following scripts in your `package.json`:
     "build": "react-scripts build",
 ```
 
-The `predeploy` script will run automatically before `deploy` is run.
+The `predeploy` component will run automatically before `deploy` is run.
 
 If you are deploying to a GitHub user page instead of a project page you'll need to make two
 additional modifications:
@@ -2329,7 +2329,7 @@ You can adjust various development and production settings by setting environmen
 
 Variable | Development | Production | Usage
 :--- | :---: | :---: | :---
-BROWSER | :white_check_mark: | :x: | By default, Create React App will open the default system browser, favoring Chrome on macOS. Specify a [browser](https://github.com/sindresorhus/opn#app) to override this behavior, or set it to `none` to disable it completely. If you need to customize the way the browser is launched, you can specify a node script instead. Any arguments passed to `npm start` will also be passed to this script, and the url where your app is served will be the last argument. Your script's file name must have the `.js` extension.
+BROWSER | :white_check_mark: | :x: | By default, Create React App will open the default system browser, favoring Chrome on macOS. Specify a [browser](https://github.com/sindresorhus/opn#app) to override this behavior, or set it to `none` to disable it completely. If you need to customize the way the browser is launched, you can specify a node component instead. Any arguments passed to `npm start` will also be passed to this component, and the url where your app is served will be the last argument. Your component's file name must have the `.js` extension.
 HOST | :white_check_mark: | :x: | By default, the development web server binds to `localhost`. You may use this variable to specify a different host.
 PORT | :white_check_mark: | :x: | By default, the development web server will attempt to listen on port 3000 or prompt you to attempt the next available port. You may use this variable to specify a different port.
 HTTPS | :white_check_mark: | :x: | When set to `true`, Create React App will run the development server in `https` mode.

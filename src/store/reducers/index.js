@@ -35,13 +35,13 @@ const lolReducer = combineReducers({
     page: pageReducer,
     connection: connectionReducer,
     redis: redisReducer,
-    loadedScripts: scriptReducer,
+    scripts: scriptReducer,
 });
 
 
 export default function subR(state = {}, action) {
-    const {login, page, connection, redis, loadedScripts} = state;
-    state = lolReducer({login, page, connection, redis, loadedScripts}, action);
+    const {login, page, connection, redis, scripts} = state;
+    state = lolReducer({login, page, connection, redis, scripts}, action);
     if (state.connection !== null)return {
         ...state,
         subscriptions: subscriptionReducer(state.subscriptions, action),

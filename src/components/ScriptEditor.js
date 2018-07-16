@@ -74,7 +74,7 @@ const ScriptEditor = createReactClass({
 });
 
 function mapStateToProps(state, ownProps) {
-    const props = get(state, 'loadedScripts', ownProps.id) || {};
+    const props = get(state, 'scripts', ownProps.id) || {};
     const serverCode = get(state, 'redis', 'script-code', ownProps.id);
     let diverged = false;
     if (props.code) {

@@ -38,7 +38,7 @@ export function write(cmdObj) {
 }
 
 //fetches even if local version is already subscribed
-export function forceFetchIntoStore(cmdObj) {
+export function fetchIntoStore(cmdObj) {
     return wrapErrorHandler(async (dispatch, getState) => {
         //run command
         const result = await getState().connection.send(redisify(cmdObj));
@@ -49,19 +49,6 @@ export function forceFetchIntoStore(cmdObj) {
             command: commandInverse,
             args: argInverse(result, ...cmdObj.args)
         });
-    }, 'REDIS');
-}
-
-//fetch only if not subscribed
-export function fetchIntoStore(cmdObj) {
-    return wrapErrorHandler(async (dispatch, getState) => {
-        const commandInverse = specs.read[cmdObj.command][0],
-            channel = namespace('write', cmdObj.args[specs.write[commandInverse]]);
-
-        if (getSubCount(getState, channel) > 0)
-            return;
-
-        dispatch(forceFetchIntoStore(cmdObj));
     }, 'REDIS');
 }
 
@@ -113,8 +100,18 @@ export function compile(id) {
         const state = getState();
         await state.connection.send({
             command: 'script:compile',
-            args: [id, get(state, 'loadedScripts', id, 'code')],
+            args: [id, get(state, 'scripts', id, 'code')],
         });
         dispatch({type: 'SCRIPT_COMPILE', success: true, id});
     }, 'SCRIPT_COMPILE', {id});
+}
+
+export function fetch(id) {
+    return wrapErrorHandler(async (dispatch, getState) => {
+        const result = await getState().connection.send({
+            command: 'script:fetch',
+            args: [id]
+        });
+        dispatch({type: 'SCRIPT_FETCH', compiled: result, success: true, id});
+    }, 'SCRIPT_FETCH', {id});
 }
