@@ -41,13 +41,13 @@ const lolReducer = combineReducers({
 
 export default function subR(state = {}, action) {
     const {login, page, connection, redis, scripts} = state;
-    state = lolReducer({login, page, connection, redis, scripts}, action);
-    if (state.connection !== null)return {
-        ...state,
+    const newState = lolReducer({login, page, connection, redis, scripts}, action);
+    if (newState.connection !== null)return {
+        ...newState,
         subscriptions: subscriptionReducer(state.subscriptions, action),
     };
     else return {
-        ...state,
+        ...newState,
         subscriptions: undefined,
     };
 }

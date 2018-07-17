@@ -1,21 +1,16 @@
 import {coalesce} from '../../util';
 
 export default function subscriptionsReducer(state = {}, action) {
-    const rp = {};
+    const rp = {...state};
     switch (action.type) {
         case 'SUBSCRIBE':
             rp[action.channel] = coalesce(state[action.channel], 0) + 1;
-            return {
-                ...state,
-                ...rp,
-            };
+            break;
         case 'UNSUBSCRIBE':
             rp[action.channel] = coalesce(state[action.channel], 0) - 1;
-            return {
-                ...state,
-                ...rp,
-            };
+            break;
         default:
             return state;
     }
+    return rp;
 }

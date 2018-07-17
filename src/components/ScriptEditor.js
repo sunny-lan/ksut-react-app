@@ -37,6 +37,12 @@ const ScriptEditor = createReactClass({
         this.props.onUnload();
     },
 
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.id !== this.props.id) {
+            nextProps.onLoad();
+        }
+    },
+
     render(){
         //TODO split loading button into separate file
         return <div style={styles.main}>

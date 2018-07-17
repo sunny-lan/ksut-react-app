@@ -36,6 +36,7 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch, ownProps) {
     return {
         onLoad(){
+            console.log('reet');
             dispatch(fetch(ownProps.id));
         },
         onUnload(){

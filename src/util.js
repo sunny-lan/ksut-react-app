@@ -15,3 +15,8 @@ export function coalesce(...args){
 export function wait(delay){
     return new Promise((resolve, reject)=>setTimeout(resolve, delay));
 }
+
+export function convertRedisRange(stop){
+    if(stop===-1)return undefined;
+    return stop+1;
+}
