@@ -1,4 +1,5 @@
-import React, {Component} from 'react';
+import React from 'react';
+import createReactClass from 'create-react-class';
 import {connect} from 'react-redux';
 import {Fabric} from 'office-ui-fabric-react/lib/Fabric';
 import LoginPage from './components/LoginPage';
@@ -10,7 +11,11 @@ const styles = {
     }
 };
 
-class App extends Component {
+const App = createReactClass({
+    componentWillMount(){
+        document.title = 'ksut';
+    },
+
     render() {
         let page;
         switch (this.props.page) {
@@ -25,8 +30,8 @@ class App extends Component {
         return <Fabric style={styles.app}>
             {page}
         </Fabric>
-    }
-}
+    },
+});
 
 function mapStateToProps(state) {
     return {
