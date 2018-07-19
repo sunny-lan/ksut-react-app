@@ -2023,6 +2023,10 @@ des.js@^1.0.0:
     inherits "^2.0.1"
     minimalistic-assert "^1.0.0"
 
+deserialize-error@^0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/deserialize-error/-/deserialize-error-0.0.3.tgz#f568633572d7c2cc46a55a5fc254b6dfce7b3fca"
+
 destroy@~1.0.4:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/destroy/-/destroy-1.0.4.tgz#978857442c44749e4206613e37946205826abd80"
@@ -5637,6 +5641,10 @@ react-dev-utils@^5.0.1:
     sockjs-client "1.1.4"
     strip-ansi "3.0.1"
     text-table "0.2.0"
+
+react-device-detect@^1.5.8:
+  version "1.5.8"
+  resolved "https://registry.yarnpkg.com/react-device-detect/-/react-device-detect-1.5.8.tgz#a26434195145e9b23f19ade031376656e1a8e135"
 
 react-dom@^16.4.1:
   version "16.4.1"

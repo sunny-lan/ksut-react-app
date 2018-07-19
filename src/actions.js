@@ -17,7 +17,6 @@ export function login(url) {
         const state = getState();
         const connection = await connect(state.login.username, state.login.password, url);
         dispatch({type: 'LOGIN', success: true, connection});
-        connection.once('disconnect', (error) => dispatch({type: 'DISCONNECT', error}));
         connection.once('error', (error) => dispatch({type: 'DISCONNECT', error}));
         //TODO maybe should move to subscribe function
         connection.on('write', (key, command) => dispatch({type: 'REDIS', ...command}));

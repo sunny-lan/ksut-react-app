@@ -1,40 +1,44 @@
 import EventEmitter from 'events';
 import config from './config';
 import commandWaiter from './commandWaiter';
-
-function getNamespace(namespaced) {
-    return namespaced.substring(0, namespaced.indexOf(':'));
-}
-
-function getName(namespaced) {
-    return namespaced.substring(namespaced.indexOf(':') + 1);
-}
+import deserializeError from 'deserialize-error';
+import {getName, getNamespace} from './namespace';
 
 export default async function connect(username, password, url = config.defaultServer) {
-    const ws = new WebSocket(url);
+    const emitter = new EventEmitter();
+    let lastError;
 
-    //websocket wrappers
-    function open() {
+    //error handling stuff
+    emitter.on('error', error => lastError = error);
+    function createCancellable(action) {
         return new Promise((resolve, reject) => {
-            ws.onopen = resolve;
-            ws.onclose = ws.onerror = () => reject(new Error('Websocket failure'));
+            if (lastError) reject(lastError);
+            emitter.once('error', reject);
+            action.then(resolve);
         });
     }
 
-    function on(callback, errorHandler) {
-        ws.onclose = ws.onerror = () => errorHandler(new Error('Websocket failure'));
+    emitter.once('error', terminate);
+
+    const ws = new WebSocket(url);
+    ws.onclose = ws.onerror = () => emitter.emit('error', new Error('Websocket failure'));
+
+    //websocket wrappers
+    function open() {
+        return createCancellable(new Promise(resolve => ws.onopen = resolve));
+    }
+
+    function on(callback) {
         ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            if (data.type === 'error')
-                errorHandler(new Error(data.error));
-            callback(data);
+            const message = JSON.parse(event.data);
+            if (message.type === 'error')
+                emitter.emit('error', deserializeError(message.error));
+            callback(message);
         };
     }
 
     function get() {
-        return new Promise((resolve, reject) => {
-            on(resolve, reject);
-        });
+        return createCancellable(new Promise(resolve => on(resolve)));
     }
 
     function send(data) {
@@ -62,10 +66,9 @@ export default async function connect(username, password, url = config.defaultSe
         throw new Error('Unknown loginReducer error');
 
     //create command set
-    const commands = commandWaiter(send);
+    const commands = commandWaiter(send, error => emitter.emit('error', error));
 
     //wait for server responses
-    const emitter = new EventEmitter();
     on(data => {
         if (data.type === 'commandResponse') {
             commands.recieve(data);
@@ -75,7 +78,7 @@ export default async function connect(username, password, url = config.defaultSe
             if (data.type === 'message' && data.channel && getNamespace(data.channel) === 'write')
                 emitter.emit('write', getName(data.channel), data.message);
         }
-    }, error => emitter.emit('error', error));
+    });
 
     //set up heartbeat
     const pingTimer = setInterval(async () => {
@@ -85,19 +88,21 @@ export default async function connect(username, password, url = config.defaultSe
                 args: [false],
             });
             if (response !== '1.129848')
-                terminate(new Error('tinkle tinkle hoy'));
+                emitter.emit('error', new Error('tinkle tinkle hoy'));
         } catch (error) {
-            terminate(error);
+            emitter.emit('error', error);
         }
     }, config.timeout);
 
-    function terminate(error) {
+    function terminate(reason) {
         clearInterval(pingTimer);
-        emitter.emit('disconnect', error);
+        if (commands)
+            commands.terminate(reason);
         ws.close();
     }
 
     //add commands to result object
     emitter.send = commands.send;
+    emitter.terminate = terminate;
     return emitter;
 }

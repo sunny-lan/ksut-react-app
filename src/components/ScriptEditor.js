@@ -26,6 +26,9 @@ const styles = {
     compileButton: {
         marginTop: '0px',
     },
+    errorMessage:{
+        color:'red',
+    },
 };
 
 const ScriptEditor = createReactClass({
@@ -66,6 +69,7 @@ const ScriptEditor = createReactClass({
                     tabSize: 4,
                 }}
             />
+            {this.props.errorMessage && <pre style={styles.errorMessage}>{this.props.errorMessage}</pre>}
             {this.props.diverged && <div>Unsaved changes (local & server version different)</div>}
             {this.props.loading ?
                 <Spinner style={styles.compileButton}/> :

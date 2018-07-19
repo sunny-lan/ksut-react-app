@@ -24,6 +24,7 @@ function connectionReducer(state = null, action) {
                 return action.connection;
             return state;
         case 'DISCONNECT':
+            //TODO graceful disconnect
             return null;
         default:
             return state;

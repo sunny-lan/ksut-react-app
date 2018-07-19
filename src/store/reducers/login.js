@@ -13,18 +13,14 @@ export default function (state = {
                     errorMessage: '',
                 };
             else if (action.error) {
-                if (typeof action.error !== 'string')
-                    action.error = action.error.message;
                 return {
                     ...state,
-                    errorMessage: action.error,
+                    errorMessage: action.error.message,
                     loading: false,
                 };
             } else if (action.success)
                 return {
                     ...state,
-                    username: '',
-                    password: '',
                     loading: false,
                 };
             return state;
@@ -32,6 +28,14 @@ export default function (state = {
             const nextState = {...state};
             nextState[action.field] = action.newValue;
             return nextState;
+        case 'DISCONNECT':
+            if (action.error)
+                return {
+                    ...state,
+                    errorMessage: 'Disconnected. Reason: ' + action.error.message,
+                };
+            else
+                return state;
         default:
             return state;
     }

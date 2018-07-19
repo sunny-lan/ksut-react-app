@@ -5,10 +5,12 @@
   "dependencies": {
     "brace": "latest",
     "create-react-class": "^15.6.3",
+    "deserialize-error": "^0.0.3",
     "office-ui-fabric-react": "^6.27.0",
     "react": "^16.4.1",
     "react-ace": "^6.1.4",
     "react-contextmenu": "latest",
+    "react-device-detect": "^1.5.8",
     "react-dom": "^16.4.1",
     "react-redux": "^5.0.7",
     "redux": "^4.0.0",

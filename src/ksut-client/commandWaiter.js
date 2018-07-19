@@ -1,13 +1,20 @@
-// import specs from './specs';
-import { timeout } from './config';
+import {timeout} from './config';
+import deserializeError from 'deserialize-error';
 
-export default function createCommandWaiter(send) {
+export default function createCommandWaiter(send, error) {
     //keep track of running commands (their resolve and reject functions)
     const openPromises = {};
     let counter = 0;
     return {
+        terminate(reason){
+            reason = reason || new Error('Connection terminated');
+            Object.keys(openPromises).forEach(
+                id => openPromises[id].reject(reason)
+            );
+        },
+
         recieve(response) {
-            if(!openPromises[response.id])
+            if (!openPromises[response.id])
                 return; //already got rejected/accepted
             //when server responds, close the corresponding promise
             if (response.subType === 'result') {
@@ -15,11 +22,11 @@ export default function createCommandWaiter(send) {
                 delete openPromises[response.id];
             }
             else if (response.subType === 'error') {
-                openPromises[response.id].reject(response.error);
+                openPromises[response.id].reject(deserializeError(response.error));
                 delete openPromises[response.id];
             }
             else
-                console.error('Could not understand server message response');
+                error(new Error('Could not understand server message response'));
         },
 
         send(command) {
@@ -29,7 +36,7 @@ export default function createCommandWaiter(send) {
 
             //actually send command
             send({
-                type:'command',
+                type: 'command',
                 ...command,
                 id: thisID
             });
@@ -37,7 +44,7 @@ export default function createCommandWaiter(send) {
             //wait for result as promise
             return new Promise((resolve, reject) => {
                 //store promise in list of pendingText commands
-                openPromises[thisID] = { resolve, reject };
+                openPromises[thisID] = {resolve, reject};
 
                 //cancel command if it hasn't been responded to for a long time
                 setTimeout(() => {

@@ -2,7 +2,6 @@ import React from 'react';
 import createReactClass from 'create-react-class';
 import {connect} from 'react-redux';
 import {Nav} from 'office-ui-fabric-react/lib/Nav';
-import ID from './ID';
 import {get} from '../util';
 import {fetchAndSubscribe, unsubscribe} from '../actions';
 import {namespace} from '../ksut-client/namespace';

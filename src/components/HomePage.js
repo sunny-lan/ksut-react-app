@@ -8,7 +8,7 @@ import ScriptEditor from './ScriptEditor';
 const styles = {
     main: {
         display: 'flex',
-        height: '100%',
+        height: '100vh',
     },
     content: {
         flex: '1',
@@ -53,7 +53,7 @@ const HomePage = createReactClass({
             if (this.state.editing)
                 content = <ScriptEditor id={this.state.currentScript}/>;
             else
-                content = <ScriptContainer id={this.state.currentScript}/>;
+                content = <ScriptContainer maximized id={this.state.currentScript}/>;
         }
         return <div style={styles.main}>
             <Sidebar
