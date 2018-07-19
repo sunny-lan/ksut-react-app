@@ -17,6 +17,7 @@ export function login(url) {
         const state = getState();
         const connection = await connect(state.login.username, state.login.password, url);
         dispatch({type: 'LOGIN', success: true, connection});
+        //TODO perform login retry on error
         connection.once('error', (error) => dispatch({type: 'DISCONNECT', error}));
         //TODO maybe should move to subscribe function
         connection.on('write', (key, command) => dispatch({type: 'REDIS', ...command}));
@@ -82,7 +83,7 @@ export function unsubscribe(channel) {
 }
 
 export function fetchAndSubscribe(cmdObj) {
-    return wrapErrorHandler(async (dispatch, getState) => {
+    return wrapErrorHandler(async (dispatch) => {
         const commandInverse = specs.read[cmdObj.command][0],
             channel = namespace('write', cmdObj.args[specs.write[commandInverse]]);
 
@@ -93,24 +94,24 @@ export function fetchAndSubscribe(cmdObj) {
     }, 'REDIS');
 }
 
-export function compile(id) {
+export function compile(scriptID) {
     return wrapErrorHandler(async (dispatch, getState) => {
-        dispatch({type: 'SCRIPT_COMPILE', begin: true, id});
+        dispatch({type: 'SCRIPT_COMPILE', begin: true, scriptID});
         const state = getState();
         await state.connection.send({
             command: 'script:compile',
-            args: [id, get(state, 'scripts', id, 'code')],
+            args: [scriptID, get(state, 'scripts', scriptID, 'code')],
         });
-        dispatch({type: 'SCRIPT_COMPILE', success: true, id});
-    }, 'SCRIPT_COMPILE', {id});
+        dispatch({type: 'SCRIPT_COMPILE', success: true, scriptID});
+    }, 'SCRIPT_COMPILE', {scriptID});
 }
 
-export function fetch(id) {
+export function fetchScript(scriptID) {
     return wrapErrorHandler(async (dispatch, getState) => {
         const result = await getState().connection.send({
             command: 'script:fetch',
-            args: [id]
+            args: [scriptID]
         });
-        dispatch({type: 'SCRIPT_FETCH', compiled: result, success: true, id});
-    }, 'SCRIPT_FETCH', {id});
+        dispatch({type: 'SCRIPT_FETCH', compiled: result, success: true, id:scriptID});
+    }, 'SCRIPT_FETCH', {id:scriptID});
 }

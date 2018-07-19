@@ -5,6 +5,7 @@ import ScriptContainer from './ScriptContainer';
 import {connect} from "react-redux";
 import {get} from '../util';
 import {fetchAndSubscribe, unsubscribe} from '../actions';
+import {namespace} from '../ksut-client/namespace';
 
 const styles = {
     main: {
@@ -29,20 +30,20 @@ const HomePage = createReactClass({
         return <div style={styles.main}>
             <List
                 style={styles.list}
-                items={this.props.scriptIDs}
+                items={this.props.instanceIDs}
                 onRenderCell={this.renderCell}
             />
         </div>
     },
 
     renderCell(item){
-        return <ScriptContainer id={item}/>
+        return <ScriptContainer instanceID={item}/>
     },
 });
 function mapStateToProps(state) {
-    const result = {scriptIDs: get(state, 'redis', 'script-code')};
-    if (result.scriptIDs)
-        result.scriptIDs = Object.keys(result.scriptIDs);
+    const result = {instanceIDs: get(state, 'redis', 'instance-script')};
+    if (result.instanceIDs)
+        result.instanceIDs = Object.keys(result.instanceIDs);
     else
         result.loading = true;
     return result;
@@ -53,11 +54,11 @@ function mapDispatchToProps(dispatch) {
         onLoad(){
             dispatch(fetchAndSubscribe({
                 command: 'hkeys',
-                args: ['script-code'],
+                args: ['instance-script'],
             }));
         },
         onUnload(){
-            dispatch(unsubscribe('write:script-code'));
+            dispatch(unsubscribe(namespace('write', 'instance-script')));
         },
     }
 }

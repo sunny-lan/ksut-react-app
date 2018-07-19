@@ -7,7 +7,7 @@ export default function subscriptionsReducer(state = {}, action) {
             rp[action.channel] = coalesce(state[action.channel], 0) + 1;
             break;
         case 'UNSUBSCRIBE':
-            rp[action.channel] = coalesce(state[action.channel], 0) - 1;
+            rp[action.channel] = Math.max(0,coalesce(state[action.channel], 0) - 1);
             break;
         default:
             return state;

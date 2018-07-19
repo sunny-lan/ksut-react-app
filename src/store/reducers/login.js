@@ -1,6 +1,6 @@
 export default function (state = {
     loading: false,
-    username: 'admin',
+    username: 'tester',
     password: 'pass',
     errorMessage: ''
 }, action) {

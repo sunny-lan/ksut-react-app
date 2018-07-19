@@ -2,7 +2,8 @@ import React from 'react';
 import createReactClass from 'create-react-class';
 import {connect} from 'react-redux';
 import {get} from '../util';
-import {fetch, fetchAndSubscribe, unsubscribe} from '../actions';
+import {fetchScript, fetchAndSubscribe, unsubscribe} from '../actions';
+import {namespace} from '../ksut-client/namespace';
 
 let styles = {
     common: {
@@ -33,8 +34,8 @@ styles = {
         height: '100%',
         flexDirection: 'column',
     },
-    error:{
-        color:'red',
+    error: {
+        color: 'red',
     },
 };
 
@@ -46,11 +47,13 @@ const ScriptContainer = createReactClass({
 
     componentDidCatch(error, info) {
         // Display fallback UI
-        this.setState({ error:true});
+        this.setState({error: true});
     },
 
     componentDidMount(){
         this.props.onLoad();
+        if (!this.props.scriptID)
+            this.props.loadScriptID();
     },
 
     componentWillUnmount(){
@@ -58,13 +61,17 @@ const ScriptContainer = createReactClass({
     },
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.id !== this.props.id) {
-            nextProps.onLoad();
-        }
+        if (this.props.instanceID !== nextProps.instanceID)
+            if (!nextProps.scriptID)
+                nextProps.loadScriptID();
+
+        if (nextProps.scriptID && this.props.scriptID !== nextProps.scriptID)
+            nextProps.loadScript(nextProps.scriptID);
     },
 
-    render() {
-        if(this.state.error)
+    render()
+    {
+        if (this.state.error)
             return <div style={styles.error}>
                 Plugin crashed
             </div>;
@@ -74,7 +81,7 @@ const ScriptContainer = createReactClass({
         if (Component)
             content = <Component
                 {...this.props.passedProps}
-                id={this.props.id}
+                instanceID={this.props.instanceID}
                 size={this.props.size}
             />;
         return <div style={styles[this.props.size]}>
@@ -89,9 +96,12 @@ function mapStateToProps(state, ownProps) {
     if (ownProps.maximized)
         size = 'maximized';
     else
-        size = get(state, 'redis', 'instance-size') || 'medium';
+        size = get(state, 'redis', 'instance-size', ownProps.instanceID) || 'medium';
+    const scriptID = get(state, 'redis', 'instance-script', ownProps.instanceID);
+    const component = get(state, 'scripts', scriptID, 'component');
     return {
-        component: get(state, 'scripts', ownProps.id, 'component'),
+        scriptID,
+        component,
         size,
     };
 }
@@ -99,14 +109,23 @@ function mapStateToProps(state, ownProps) {
 function mapDispatchToProps(dispatch, ownProps) {
     return {
         onLoad(){
-            dispatch(fetch(ownProps.id));
             dispatch(fetchAndSubscribe({
-                command: 'hgetall',
-                args: ['instance-size']
+                command: 'hget',
+                args: ['instance-size', ownProps.instanceID],
             }));
         },
         onUnload(){
-            dispatch(unsubscribe('write:instance-size'));
+            dispatch(unsubscribe(namespace('write', 'instance-size')));
+            dispatch(unsubscribe(namespace('write', 'instance-script')));
+        },
+        loadScriptID(){
+            dispatch(fetchAndSubscribe({
+                command: 'hget',
+                args: ['instance-script', ownProps.instanceID],
+            }));
+        },
+        loadScript(scriptID){
+            dispatch(fetchScript(scriptID));
         },
     }
 }
