@@ -13,7 +13,7 @@ export function coalesce(...args){
 }
 
 export function wait(delay){
-    return new Promise((resolve, reject)=>setTimeout(resolve, delay));
+    return new Promise(resolve=>setTimeout(resolve, delay));
 }
 
 export function convertRedisRange(stop){

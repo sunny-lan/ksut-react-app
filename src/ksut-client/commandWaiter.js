@@ -49,7 +49,7 @@ export default function createCommandWaiter(send, error) {
                 //cancel command if it hasn't been responded to for a long time
                 setTimeout(() => {
                     delete openPromises[thisID];
-                    reject('Command timed out');
+                    reject(new Error('Command timed out'));
                 }, timeout);
             });
         }
