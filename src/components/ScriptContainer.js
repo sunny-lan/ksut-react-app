@@ -4,6 +4,9 @@ import {connect} from 'react-redux';
 import {get} from '../util';
 import {fetchScript, fetchAndSubscribe, unsubscribe} from '../actions';
 import {namespace} from '../ksut-client/namespace';
+import {Link} from 'react-router-dom';
+import {DefaultButton} from 'office-ui-fabric-react/lib/Button';
+import ID from './ID';
 
 let styles = {
     common: {
@@ -37,6 +40,20 @@ styles = {
     error: {
         color: 'red',
     },
+    controlBar: {
+        display: 'flex',
+        flexWrap: 'nowrap',
+        alignItems: 'center',
+        flexShrink: '0',
+    },
+    link: {
+        minWidth: 0,
+        flexShrink: 1,
+    },
+    contextButton: {
+        marginLeft: 'auto',
+    },
+    id: {}
 };
 
 
@@ -46,7 +63,6 @@ const ScriptContainer = createReactClass({
     },
 
     componentDidCatch(error, info) {
-        // Display fallback UI
         this.setState({error: true});
     },
 
@@ -77,17 +93,50 @@ const ScriptContainer = createReactClass({
             </div>;
 
         const Component = this.props.component;
-        let content;
+        let content = 'Loading...';
         if (Component)
             content = <Component
                 {...this.props.passedProps}
                 instanceID={this.props.instanceID}
                 size={this.props.size}
             />;
-        return <div style={styles[this.props.size]}>
-            <div>{this.props.id}</div>
-            {content}
-        </div>
+
+        //todo actually make a user interface
+        const contextMenu = <DefaultButton
+            style={styles.contextButton}
+            menuProps={{
+                shouldFocusOnMount: true,
+                items: [
+                    {
+                        key: 'delete', text: 'Delete',
+                        onClick: () => this.props.onDelete().catch(e => alert(e.message))
+                    },
+                    {
+                        key:'rename',text:'Rename',
+                        onClick:()=>this.props.onRename(prompt('enter new name')).then(e=>alert(e.message)),
+                    }
+                ],
+            }}
+        />;
+
+        const link = <Link style={styles.link} to={`/instances/${this.props.instanceID}`}>
+            <ID style={styles.id} id={this.props.instanceID}/>
+        </Link>;
+
+        if (this.props.size === 'compact')
+            return <div style={styles.compact}>
+                {link}
+                {content}
+                {contextMenu}
+            </div>;
+        else
+            return <div style={this.props.maximized ? styles.maximized : styles.medium}>
+                <div style={styles.controlBar}>
+                    {link}
+                    {contextMenu}
+                </div>
+                {content}
+            </div>;
     }
 });
 
@@ -103,6 +152,18 @@ function mapStateToProps(state, ownProps) {
         scriptID,
         component,
         size,
+        async onRename(name){
+            await state.connection.send({
+                command: 'redis:hset',
+                args: ['id-name',ownProps.instanceID,name],
+            });
+        },
+        async onDelete(){
+            await state.connection.send({
+                command: 'script:destroyInstance',
+                args: [ownProps.instanceID],
+            });
+        },
     };
 }
 

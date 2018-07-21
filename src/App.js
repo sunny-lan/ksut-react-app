@@ -6,6 +6,7 @@ import LoginPage from './components/LoginPage';
 import HomePage from './components/HomePage';
 import {BrowserView, MobileView} from "react-device-detect";
 import MobileHomePage from './components/MobileHomePage';
+import {withRouter} from 'react-router-dom';
 
 const styles = {
     app: {
@@ -44,4 +45,4 @@ function mapStateToProps(state) {
     }
 }
 
-export default connect(mapStateToProps)(App);
+export default withRouter(connect(mapStateToProps)(App));

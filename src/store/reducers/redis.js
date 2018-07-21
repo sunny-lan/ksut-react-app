@@ -26,12 +26,19 @@ const commands = {
         return commands.hset(state, key, field, Number(coalesce(get(state, key, field), 0)) + Number(amt));
     },
 
+    hdel(state, key, field, ...fields){
+        const rpH = {...state[key]};
+        delete rpH[field];
+        fields.forEach(field => delete rpH[field]);
+        return commands.set(state, key, rpH);
+    },
+
     _lrange(state, key, start, stop, values){
         let newArray;
         if (Array.isArray(state[key])) {
             //TODO sketchy hack
-            if(start===0 && stop===-1)
-                newArray=values;
+            if (start === 0 && stop === -1)
+                newArray = values;
             else {
                 stop = convertRedisRange(stop);
                 newArray = state[key].slice(0, start).concat(values).concat(state[key].slice(stop));
@@ -40,7 +47,7 @@ const commands = {
             //TODO this has issues
             newArray = [];
             for (let i = 0; i < values.length; i++)
-                newArray[i+start] = values[i];
+                newArray[i + start] = values[i];
         }
         return commands.set(state, key, newArray);
     },

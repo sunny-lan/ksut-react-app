@@ -25,6 +25,7 @@ export default {
         _hgetall: 0,
         hset: 0,
         hincrby: 0,
+        hdel:0,
         _lrange: 0,
         lpush: 0,
         ltrim: 0,

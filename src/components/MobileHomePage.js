@@ -1,66 +1,34 @@
 import React from 'react';
-import createReactClass from 'create-react-class';
-import {List} from 'office-ui-fabric-react/lib/List';
+import {Switch, Route} from 'react-router-dom';
+import Dashboard from './Dashboard';
 import ScriptContainer from './ScriptContainer';
-import {connect} from "react-redux";
-import {get} from '../util';
-import {fetchAndSubscribe, unsubscribe} from '../actions';
-import {namespace} from '../ksut-client/namespace';
+import ScriptChooser from './ScriptChooser';
+import Bar from './Bar';
 
 const styles = {
     main: {
         display: 'flex',
         height: '100vh',
+        flexDirection: 'column'
     },
-    list: {
-        width: '100%',
-    }
 };
 
-const HomePage = createReactClass({
-    componentDidMount(){
-        this.props.onLoad();
-    },
-
-    componentWillUnmount(){
-        this.props.onUnload();
-    },
-
-    render() {
-        return <div style={styles.main}>
-            <List
-                style={styles.list}
-                items={this.props.instanceIDs}
-                onRenderCell={this.renderCell}
-            />
-        </div>
-    },
-
-    renderCell(item){
-        return <ScriptContainer instanceID={item}/>
-    },
-});
-function mapStateToProps(state) {
-    const result = {instanceIDs: get(state, 'redis', 'instance-script')};
-    if (result.instanceIDs)
-        result.instanceIDs = Object.keys(result.instanceIDs);
-    else
-        result.loading = true;
-    return result;
+function ScriptFullscreen(props) {
+    return <ScriptContainer
+        instanceID={props.match.params.instanceID}
+        maximized
+    />
 }
 
-function mapDispatchToProps(dispatch) {
-    return {
-        onLoad(){
-            dispatch(fetchAndSubscribe({
-                command: 'hkeys',
-                args: ['instance-script'],
-            }));
-        },
-        onUnload(){
-            dispatch(unsubscribe(namespace('write', 'instance-script')));
-        },
-    }
+function HomePage(props) {
+    return <div style={styles.main}>
+        <Bar/>
+        <Switch>
+            <Route path="/search" component={ScriptChooser}/>
+            <Route path="/instances/:instanceID" render={ScriptFullscreen}/>
+            <Route component={Dashboard}/>
+        </Switch>
+    </div>
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(HomePage);
+export default HomePage;

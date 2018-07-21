@@ -8,6 +8,8 @@ import {DefaultButton} from 'office-ui-fabric-react/lib/Button';
 import * as util from './util';
 import * as actions from './actions';
 
+import ID from './components/ID';
+
 export default{
     'react': React,
     'react-redux': {connect},
@@ -18,4 +20,5 @@ export default{
 
     './util': util,
     './actions': actions,
+    './components/ID': ID,
 };
