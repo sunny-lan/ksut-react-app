@@ -5,11 +5,12 @@ import {Nav} from 'office-ui-fabric-react/lib/Nav';
 import {get} from '../util';
 import {fetchAndSubscribe, unsubscribe} from '../actions';
 import {namespace} from '../ksut-client/namespace';
-import {IconButton} from 'office-ui-fabric-react/lib/Button';
+import ID from "./ID";
+import uuid from 'uuid/v4';
 
 const style = {
     main: {
-        width: "408px",
+        width: "308px",
         boxSizing: "border-box",
         border: "1px solid #EEE",
         overflowY: "auto",
@@ -17,11 +18,12 @@ const style = {
     scriptLink: {
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between',
         width: '100%',
+        minWidth: '0',
     },
-    scriptLinkIcon: {
-        marginLeft: 'auto',
+    scriptID: {
+        minWidth: '0',
+        width: '100%',
     },
 };
 
@@ -36,21 +38,15 @@ const Sidebar = createReactClass({
 
     handleLinkClick(event, link){
         if (link.type === 'SCRIPT')
-            this.props.onScriptClick(link.key)
+            this.props.onScriptClick(link.name)
     },
 
     renderLink(link){
         if (link.type === 'SCRIPT')
-            return <div style={style.scriptLink}>
-                <div onClick={() => this.props.onScriptClick(link.name)}>{link.name}</div>
-                <IconButton
-                    iconProps={ {iconName: 'Edit'} }
-                    title='Edit'
-                    ariaLabel='Edit'
-                    onClick={() => this.props.onScriptEdit(link.name)}
-                />
+            return <div onClick={() => this.props.onScriptClick(link.name)} style={style.scriptLink}>
+                <ID id={link.name} style={style.scriptLink}/>
             </div>;
-        return (<div>{ link.name }</div>);
+        return <div>{ link.name }</div>;
     },
 
     render() {
@@ -58,14 +54,8 @@ const Sidebar = createReactClass({
             <Nav
                 groups={[{
                     links: [
-                        {
-                            name: 'Scripts',
-                            links: [
-                                {name:'Create', onClick:this.props.onCreateScript},
-                                ...this.props.scriptLinks,
-                            ],
-                            isExpanded: true,
-                        },
+                        {name: 'Create', onClick: this.props.onCreateScript, icon: 'Add'},
+                        ...this.props.scriptLinks,
                     ]
                 }]}
                 onRenderLink={this.renderLink}
@@ -78,15 +68,16 @@ const Sidebar = createReactClass({
 
 function mapStateToProps(state) {
     return {
-        scriptLinks: Object.keys(get(state, 'redis', 'script-code')||{}).map(key => {
-            return {
-                name: key, type: 'SCRIPT'
-            };
-        }),
+        scriptLinks: Object.keys(get(state, 'redis', 'script-code') || {})
+            .map(key => {
+                return {
+                    name: key, type: 'SCRIPT', key
+                };
+            }),
     };
 }
 
-function mapDispatchToProps(dispatch) {
+function mapDispatchToProps(dispatch, ownProps) {
     return {
         onLoad(){
             dispatch(fetchAndSubscribe({
@@ -96,6 +87,11 @@ function mapDispatchToProps(dispatch) {
         },
         onUnload(){
             dispatch(unsubscribe(namespace('write', 'script-code')));
+        },
+        onCreateScript(){
+            const id = uuid();
+            dispatch({type: 'SCRIPT_NEW', id});
+            ownProps.onScriptClick(id);
         },
     };
 }

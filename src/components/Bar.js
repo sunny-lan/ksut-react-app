@@ -3,6 +3,7 @@ import {CommandBar} from 'office-ui-fabric-react/lib/CommandBar';
 import {withRouter} from 'react-router-dom';
 import {connect} from 'react-redux';
 import {get} from '../util';
+import {isBrowser} from 'react-device-detect';
 
 const styles = {
     bar: {
@@ -11,12 +12,22 @@ const styles = {
 };
 
 function Bar(props) {
+    let items = [
+        {key: 'home', iconProps: {iconName: 'Home'}, path: '/'},
+        {key: 'add', iconProps: {iconName: 'Add'}, path: '/search'},
+    ];
+    if (isBrowser)
+        items.push({key: 'developer', iconProps: {iconName: 'DeveloperTools'}, path: '/developer'});
+    items = items.map(item => {
+        item.onClick = () => props.history.push(item.path);
+        if (props.location.pathname === item.path)
+            item.iconProps.style={color :'red'};
+        return item;
+    });
+
     return <CommandBar
         style={styles.bar}
-        items={[
-            {key: 'home', iconProps: {iconName: 'Home'}, onClick: () => props.history.push('/')},
-            {key: 'add', iconProps: {iconName: 'Add'}, onClick: () => props.history.push('/search')},
-        ]}
+        items={items}
         farItems={[
             {
                 key: 'account',

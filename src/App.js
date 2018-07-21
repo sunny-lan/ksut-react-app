@@ -4,8 +4,6 @@ import {connect} from 'react-redux';
 import {Fabric} from 'office-ui-fabric-react/lib/Fabric';
 import LoginPage from './components/LoginPage';
 import HomePage from './components/HomePage';
-import {BrowserView, MobileView} from "react-device-detect";
-import MobileHomePage from './components/MobileHomePage';
 import {withRouter} from 'react-router-dom';
 
 const styles = {
@@ -26,10 +24,7 @@ const App = createReactClass({
                 page = <LoginPage/>;
                 break;
             case 'HOME':
-                page = <div>
-                    <MobileView ><MobileHomePage/></MobileView>
-                    <BrowserView><HomePage/></BrowserView>
-                </div>;
+                page = <HomePage/>;
                 break;
             default:
         }

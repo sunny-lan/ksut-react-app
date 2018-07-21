@@ -3,10 +3,10 @@ import specs from './ksut-client/specs';
 import {namespace} from './ksut-client/namespace';
 import {coalesce, get} from './util';
 
-export function wrapErrorHandler(callback, type, otherData) {
+export function wrapErrorHandler(callback, otherData) {
     return (dispatch, ...args) => {
         (async () => callback(dispatch, ...args))().catch(error => {
-            dispatch({type, ...otherData, error})
+            dispatch({...otherData, error})
         });
     }
 }
@@ -21,7 +21,7 @@ export function login(url) {
         connection.once('error', (error) => dispatch({type: 'DISCONNECT', error}));
         //TODO maybe should move to subscribe function
         connection.on('write', (key, command) => dispatch({type: 'REDIS', ...command}));
-    }, 'LOGIN');
+    }, {type: 'LOGIN'});
 }
 
 function redisify(cmdObj) {
@@ -29,12 +29,6 @@ function redisify(cmdObj) {
         ...cmdObj,
         command: namespace('redis', cmdObj.command),
     };
-}
-
-export function write(cmdObj) {
-    return wrapErrorHandler(async (dispatch, getState) => {
-        await getState().connection.send(redisify(cmdObj));
-    }, 'REDIS');
 }
 
 //fetches even if local version is already subscribed
@@ -49,7 +43,7 @@ export function fetchIntoStore(cmdObj) {
             command: commandInverse,
             args: argInverse(result, ...cmdObj.args)
         });
-    }, 'REDIS');
+    }, {type: 'REDIS'});
 }
 
 function getSubCount(getState, channel) {
@@ -66,7 +60,7 @@ export function subscribe(channel) {
             });
 
         dispatch({type: 'SUBSCRIBE', channel});
-    }, 'REDIS');
+    }, {type: 'REDIS'});
 }
 
 export function unsubscribe(channel) {
@@ -79,7 +73,7 @@ export function unsubscribe(channel) {
                 command: namespace('redis', 'unsubscribe'),
                 args: [channel]
             });
-    }, 'REDIS');
+    }, {type: 'REDIS'});
 }
 
 export function fetchAndSubscribe(cmdObj) {
@@ -91,27 +85,34 @@ export function fetchAndSubscribe(cmdObj) {
 
         //subscribe
         dispatch(subscribe(channel));
-    }, 'REDIS');
+    }, {type: 'REDIS'});
+}
+
+export function send(cmdObj, actionBase = {type: 'SEND'}) {
+    return wrapErrorHandler(async (dispatch, getState) => {
+        dispatch({...actionBase, begin: true,});
+        const result = await getState().connection.send(cmdObj);
+        dispatch({...actionBase, success: true, result});
+    }, actionBase);
 }
 
 export function compile(scriptID) {
-    return wrapErrorHandler(async (dispatch, getState) => {
-        dispatch({type: 'SCRIPT_COMPILE', begin: true, scriptID});
-        const state = getState();
-        await state.connection.send({
-            command: 'script:compile',
-            args: [scriptID, get(state, 'scripts', scriptID, 'code')],
-        });
-        dispatch({type: 'SCRIPT_COMPILE', success: true, scriptID});
-    }, 'SCRIPT_COMPILE', {scriptID});
+    return (dispatch, getState) => dispatch(send({
+        command: 'script:compile',
+        args: [scriptID, get(getState(), 'scripts', scriptID, 'code')],
+    }, {type: 'SCRIPT_COMPILE', id: scriptID}));
 }
 
 export function fetchScript(scriptID) {
-    return wrapErrorHandler(async (dispatch, getState) => {
-        const result = await getState().connection.send({
-            command: 'script:fetch',
-            args: [scriptID]
-        });
-        dispatch({type: 'SCRIPT_FETCH', compiled: result, success: true, id:scriptID});
-    }, 'SCRIPT_FETCH', {id:scriptID});
+    return send({
+        command: 'script:fetch',
+        args: [scriptID]
+    }, {type: 'SCRIPT_FETCH', id: scriptID});
+}
+
+export function fetchScriptInfo(scriptID) {
+    return send({
+        command: 'script:fetchInfo',
+        args: [scriptID]
+    }, {type: 'SCRIPT_FETCH_INFO', id: scriptID});
 }

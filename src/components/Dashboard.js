@@ -1,7 +1,7 @@
 import React from 'react';
 import createReactClass from 'create-react-class';
 import {List} from 'office-ui-fabric-react/lib/List';
-import ScriptContainer from './ScriptContainer';
+import ScriptContainer from './InstanceContainer';
 import {connect} from "react-redux";
 import {get} from '../util';
 import {fetchAndSubscribe, unsubscribe} from '../actions';

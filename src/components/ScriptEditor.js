@@ -20,14 +20,14 @@ const styles = {
         width: '100%',
     },
     codeEditor: {
-        width:'100%',
+        width: '100%',
         flexGrow: '1',
     },
     compileButton: {
         marginTop: '0px',
     },
-    errorMessage:{
-        color:'red',
+    errorMessage: {
+        color: 'red',
     },
 };
 
@@ -68,6 +68,10 @@ const ScriptEditor = createReactClass({
                     showLineNumbers: true,
                     tabSize: 4,
                 }}
+                editorProps={{
+
+                    $blockScrolling: Infinity,
+                }}
             />
             {this.props.errorMessage && <pre style={styles.errorMessage}>{this.props.errorMessage}</pre>}
             {this.props.diverged && <div>Unsaved changes (local & server version different)</div>}
@@ -86,13 +90,8 @@ const ScriptEditor = createReactClass({
 function mapStateToProps(state, ownProps) {
     const props = get(state, 'scripts', ownProps.id) || {};
     const serverCode = get(state, 'redis', 'script-code', ownProps.id);
-    let diverged = false;
-    if (props.code) {
-        if (props.code !== serverCode)
-            diverged = true;
-    } else
-        props.code = serverCode || '';
-    return {...props, diverged};
+    const code = props.code || serverCode || '';
+    return {...props, code, diverged: code !== serverCode};
 }
 
 function mapDispatchToProps(dispatch, ownProps) {

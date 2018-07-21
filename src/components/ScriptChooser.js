@@ -4,6 +4,7 @@ import {SearchBox} from 'office-ui-fabric-react/lib/SearchBox';
 import {ProgressIndicator} from 'office-ui-fabric-react/lib/ProgressIndicator';
 import {connect} from 'react-redux';
 import {List} from'office-ui-fabric-react/lib/List';
+import ScriptContainer from './ScriptContainer';
 
 const searchTime = 100;
 const styles = {
@@ -16,7 +17,6 @@ const styles = {
         height: '10px',
     },
 };
-
 
 
 //TODO maybe move state to redux? idk
@@ -62,15 +62,8 @@ const ScriptChooser = createReactClass({
             }))
     },
 
-    handleScriptClick(scriptID){
-        //TODO split into separate component
-        this.props.onScriptPicked(scriptID)
-            .then(result => alert('instance id: ' + result))
-            .catch(error => alert('error: ' + error))
-    },
-
     renderCell(item){
-        return <div onClick={() => this.handleScriptClick(item)}>{item}</div>
+        return <ScriptContainer scriptID={item}/>
     },
 
     render(){
