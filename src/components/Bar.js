@@ -21,7 +21,7 @@ function Bar(props) {
     items = items.map(item => {
         item.onClick = () => props.history.push(item.path);
         if (props.location.pathname === item.path)
-            item.iconProps.style={color :'red'};
+            item.iconProps.style = {color: 'red'};
         return item;
     });
 
@@ -35,7 +35,14 @@ function Bar(props) {
                 subMenuProps: {
                     items: [
                         {key: 'logout', name: 'Logout', onClick: props.logout},
-                        {key: 'settings', name: 'Settings'},
+                        {
+                            key: 'settings', name: 'Password',
+                            onClick(){
+                                props.changePassword(prompt("enter a new password"))
+                                    .then(() => alert('password changed'))
+                                    .catch(e => alert(e));
+                            }
+                        },
                     ]
                 },
             },
@@ -46,6 +53,12 @@ function Bar(props) {
 function mapStateToProps(state) {
     return {
         username: get(state, 'login', 'username'),
+        async changePassword(newPassword){
+            await state.connection.send({
+                command: 'user:setPassword',
+                args: [newPassword],
+            });
+        },
     }
 }
 

@@ -26,6 +26,10 @@ const styles = {
 };
 
 function render(props) {
+    function handleKeyPress(keyPressed) {
+        if (keyPressed.key === 'Enter')
+            props.onLogin();
+    }
     return <div style={styles.main}>
         <div style={styles.loginBox}>
             <h1><Label>Login</Label></h1>
@@ -34,6 +38,7 @@ function render(props) {
                 value={props.username}
                 onChanged={newValue => props.onFieldChange('username', newValue)}
                 disabled={props.loading}
+                onKeyPress={handleKeyPress}
             />
             <TextField
                 label="Password"
@@ -42,10 +47,7 @@ function render(props) {
                 errorMessage={props.errorMessage}
                 disabled={props.loading}
                 type="password"
-                onKeyPress={keyPressed => {
-                    if (keyPressed.key === 'Enter')
-                        props.onLogin();
-                }}
+                onKeyPress={handleKeyPress}
             />
             {props.loading ?
                 <Spinner style={styles.loginButton}/> :
