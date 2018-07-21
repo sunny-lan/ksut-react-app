@@ -25,7 +25,7 @@ const Dashboard = createReactClass({
     },
 
     render() {
-        if (this.props.instanceIDs)
+        if (get(this.props, 'instanceIDs', 0))
             return <List
                 style={styles.list}
                 items={this.props.instanceIDs}

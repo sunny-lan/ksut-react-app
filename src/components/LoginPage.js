@@ -5,6 +5,7 @@ import {DefaultButton} from 'office-ui-fabric-react/lib/Button';
 import {Spinner} from 'office-ui-fabric-react/lib/Spinner';
 import {Label} from "office-ui-fabric-react/lib/Label";
 import {login} from '../actions';
+import {Link} from 'office-ui-fabric-react/lib/Link';
 
 const styles = {
     main: {
@@ -30,6 +31,22 @@ function render(props) {
         if (keyPressed.key === 'Enter')
             props.onLogin();
     }
+
+    function register() {
+        fetch('/createAccount', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: prompt('enter new username'),
+                password: prompt('enter new password'),
+            })
+        }).then(response => alert(response.status))
+            .catch(e => alert(e.message));
+    }
+
     return <div style={styles.main}>
         <div style={styles.loginBox}>
             <h1><Label>Login</Label></h1>
@@ -58,12 +75,15 @@ function render(props) {
                     primary={true}
                 />
             }
+            <Link onClick={register}>Register</Link>
         </div>
     </div>
 }
 
 function mapStateToProps(state) {
-    return state.login;
+    return {
+        ...state.login,
+    };
 }
 
 function mapDispatchToProps(dispatch, ownProps) {

@@ -22,7 +22,7 @@ const ScriptContainer = createReactClass({
         return <div style={styles.main}>
             <strong>{this.props.name}</strong>
             <pre>{this.props.description || 'No description'}</pre>
-            <DefaultButton text="Start instance" onClick={this.props.instantiateScript()}/>
+            <DefaultButton text="Start instance" onClick={this.props.instantiateScript}/>
         </div>
     },
 });
