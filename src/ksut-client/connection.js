@@ -1,24 +1,30 @@
 import EventEmitter from 'events';
 import config from './config';
-import commandWaiter from './commandWaiter';
 import deserializeError from 'deserialize-error';
-import {getName, getNamespace} from './namespace';
+import createClient from './messageClient';
+import {extract} from '../util';
 
 export default async function connect(username, password, url = config.defaultServer) {
     const emitter = new EventEmitter();
+    emitter.on('error',()=>{});//TODO bug report
+
     let lastError;
 
     //error handling stuff
-    emitter.on('error', error => lastError = error);
+    emitter.once('error', error => lastError = error);
     function createCancellable(action) {
         return new Promise((resolve, reject) => {
+            //if an error already occurred no further code should run
             if (lastError) reject(lastError);
+            //if an error occurs during the async, it should reject
             emitter.once('error', reject);
-            action.then(resolve);
+            //if the async completes, it shouldn't reject
+            action.then((...args) => {
+                emitter.removeListener('error', reject);
+                resolve(...args);
+            });
         });
     }
-
-    emitter.once('error', terminate);
 
     const ws = new WebSocket(url);
     ws.onclose = ws.onerror = () => emitter.emit('error', new Error('Websocket failure'));
@@ -30,15 +36,20 @@ export default async function connect(username, password, url = config.defaultSe
 
     function on(callback) {
         ws.onmessage = (event) => {
-            const message = JSON.parse(event.data);
-            if (message.type === 'error')
-                emitter.emit('error', deserializeError(message.error));
-            callback(message);
+            try {
+                callback(JSON.parse(event.data));
+            } catch (error) {
+                emitter.emit('error', error);
+            }
         };
     }
 
     function get() {
-        return createCancellable(new Promise(resolve => on(resolve)));
+        return createCancellable(new Promise(resolve => on(data => {
+            if (data.type === 'error')
+                emitter.emit('error', deserializeError(data.error));
+            resolve(data);
+        })));
     }
 
     function send(data) {
@@ -60,49 +71,26 @@ export default async function connect(username, password, url = config.defaultSe
         username, password
     });
 
-    //wait for loginReducer result
+    //wait for login result
     let response = await get();
     if (response.type !== 'loginSuccess')
         throw new Error('Unknown loginReducer error');
 
     //create command set
-    const commands = commandWaiter(send, error => emitter.emit('error', error));
+    const client = createClient(send, true);
+    emitter.once('error', client.quit);
+    client.on('error', error => emitter.emit('error', error));
+    client.on('message', (...args) => emitter.emit('message', ...args));
 
     //wait for server responses
-    on(data => {
-        if (data.type === 'commandResponse') {
-            commands.recieve(data);
-        } else {
-            emitter.emit(data.type, data);
-            //also check for write
-            if (data.type === 'message' && data.channel && getNamespace(data.channel) === 'write')
-                emitter.emit('write', getName(data.channel), data.message);
-        }
-    });
+    on(client.receive);
 
-    //set up heartbeat
-    const pingTimer = setInterval(async () => {
-        try {
-            const response = await commands.send({
-                command: 'good:vibrations',
-                args: [false],
-            });
-            if (response !== '1.129848')
-                emitter.emit('error', new Error('tinkle tinkle hoy'));
-        } catch (error) {
-            emitter.emit('error', error);
-        }
-    }, config.timeout);
+    return {
+        ...extract(emitter),
 
-    function terminate(reason) {
-        clearInterval(pingTimer);
-        if (commands)
-            commands.terminate(reason);
-        ws.close();
+        send: client.send,
+        s: client.s,
+
+        quit:client.quit,
     }
-
-    //add commands to result object
-    emitter.send = commands.send;
-    emitter.terminate = terminate;
-    return emitter;
 }

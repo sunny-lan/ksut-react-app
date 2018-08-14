@@ -2,6 +2,7 @@ import connect from './ksut-client/connection';
 import specs from './ksut-client/specs';
 import {namespace} from './ksut-client/namespace';
 import {coalesce, get} from './util';
+import wrapClient from './ksut-client/advancedClient';
 
 export function wrapErrorHandler(callback, otherData) {
     return (dispatch, ...args) => {
@@ -15,12 +16,11 @@ export function login(url) {
     return wrapErrorHandler(async (dispatch, getState) => {
         dispatch({type: 'LOGIN', begin: true});
         const state = getState();
-        const connection = await connect(state.login.username, state.login.password, url);
-        dispatch({type: 'LOGIN', success: true, connection});
+        const connection = wrapClient(await connect(state.login.username, state.login.password, url));
         //TODO perform login retry on error
         connection.once('error', (error) => dispatch({type: 'DISCONNECT', error}));
-        //TODO maybe should move to subscribe function
-        connection.on('write', (key, command) => dispatch({type: 'REDIS', ...command}));
+        connection.namespace.on('write', message => dispatch({type: 'REDIS', ...message}));
+        dispatch({type: 'LOGIN', success: true, connection});
     }, {type: 'LOGIN'});
 }
 

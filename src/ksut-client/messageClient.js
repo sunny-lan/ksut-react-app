@@ -1,7 +1,10 @@
-import {timeout} from './config';
-import deserializeError from 'deserialize-error';
+const {extract} = require('../util');
+const config = require('./config');
 
-export default function createCommandWaiter(send, error) {
+const deserializeError = require('deserialize-error');
+const EventEmitter = require('events');
+
+function createCommandWaiter(send, error) {
     //keep track of running commands (their resolve and reject functions)
     const openPromises = {};
     let counter = 0;
@@ -13,7 +16,7 @@ export default function createCommandWaiter(send, error) {
             );
         },
 
-        recieve(response) {
+        receive(response) {
             if (!openPromises[response.id])
                 return; //already got rejected/accepted
             //when server responds, close the corresponding promise
@@ -50,25 +53,55 @@ export default function createCommandWaiter(send, error) {
                 setTimeout(() => {
                     delete openPromises[thisID];
                     reject(new Error('Command timed out'));
-                }, timeout);
+                }, config.timeout);
             });
         }
     };
 }
 
-// export default function createWrapped(send) {
-//     const waiter = createCommandWaiter(send);
-//     const result = {
-//         _recieve: waiter.recieve,
-//         _send: waiter.send,
-//     };
-//     Object.keys(specs).forEach(namespace =>
-//         specs[namespace].forEach(command => {
-//             result[namespace] = {};
-//             result[namespace][command] = (...args) => waiter.send({
-//                 command, args
-//             });
-//         })
-//     );
-//     return result;
-// }
+function makeClient(send, heartbeat) {
+    const quitEmitter = new EventEmitter(), emitter = new EventEmitter();
+    emitter.once('error', error => quitEmitter.emit('quit', error));
+
+    const waiter = createCommandWaiter(send, error => emitter.emit('error', error), config);
+
+    if (heartbeat) {
+        //set up heartbeat
+        const pingTimer = setInterval(async () => {
+            try {
+                const response = await waiter.send({
+                    command: 'good:vibrations',
+                    args: [false],
+                });
+                if (response !== '1.129848')
+                    emitter.emit('error', new Error('tinkle tinkle hoy'));
+            } catch (error) {
+                emitter.emit('error', error);
+            }
+        }, config.timeout);
+
+        quitEmitter.once('quit', () => clearInterval(pingTimer));
+    }
+
+    return {
+        receive(data){
+            if (data.type === 'commandResponse')
+                waiter.receive(data);
+            else
+                emitter.emit('message', data)
+        },
+        send: waiter.send,
+
+        s(command, args){
+            return waiter.send({command, args});
+        },
+
+        quit(reason){
+            quitEmitter.emit('quit', reason);
+        },
+
+        ...extract(emitter),
+    };
+}
+
+export default makeClient;

@@ -1,5 +1,6 @@
 {
   "version": 7,
   "timeout": 1000,
-  "defaultServer": "wss://serene-chamber-10373.herokuapp.com/"
+  "defaultServer": "ws://serene-chamber-10373.herokuapp.com/",
+  "debug": true
 }

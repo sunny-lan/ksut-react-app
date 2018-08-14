@@ -112,8 +112,12 @@ const ScriptContainer = createReactClass({
                         onClick: () => this.props.onDelete().catch(e => alert(e.message))
                     },
                     {
-                        key:'rename',text:'Rename',
-                        onClick:()=>this.props.onRename(prompt('enter new name')).catch(e=>alert(e.message)),
+                        key: 'rename', text: 'Rename',
+                        onClick: () => this.props.onRename(prompt('enter new name')).catch(e => alert(e.message)),
+                    },
+                    {
+                        key: 'reload', text: 'Reload',
+                        onClick: ()=>this.props.loadScript(this.props.scriptID),
                     }
                 ],
             }}
@@ -155,7 +159,7 @@ function mapStateToProps(state, ownProps) {
         async onRename(name){
             await state.connection.send({
                 command: 'redis:hset',
-                args: ['id-name',ownProps.instanceID,name],
+                args: ['id-name', ownProps.instanceID, name],
             });
         },
         async onDelete(){
