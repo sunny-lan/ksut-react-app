@@ -6,31 +6,21 @@ import {extract} from '../util';
 
 export default async function connect(username, password, url = config.defaultServer) {
     const emitter = new EventEmitter();
-
-    let lastError;
-
     //error handling stuff
-    emitter.once('error', error => lastError = error);
-    function createCancellable(action) {
-        //if an error already occurred no further code should run
-        if (lastError) throw lastError;
-        return new Promise((resolve, reject) => {
-            //if an error occurs during the async, it should reject
-            emitter.once('error', reject);
-            //if the async completes, it shouldn't reject
-            action.then((...args) => {
-                emitter.removeListener('error', reject);
-                resolve(...args);
-            });
-        });
+    const pError = new Promise((_, reject) => emitter.once('error', reject));
+
+    function raceCancel(callback, ...args) {
+        return Promise.race([pError, Promise.resolve()])
+            .then(() => Promise.race([pError, callback(...args)]));
     }
 
     const ws = new WebSocket(url);
     ws.onclose = ws.onerror = () => emitter.emit('error', new Error('Websocket failure'));
+    emitter.once('error', () => ws.onclose = ws.onerror = undefined);
 
     //websocket wrappers
     function open() {
-        return createCancellable(new Promise(resolve => ws.onopen = resolve));
+        return new Promise(resolve => ws.onopen = resolve);
     }
 
     function on(callback) {
@@ -44,21 +34,21 @@ export default async function connect(username, password, url = config.defaultSe
     }
 
     function get() {
-        return createCancellable(new Promise(resolve => on(data => {
+        return new Promise(resolve => on(data => {
             if (data.type === 'error')
                 emitter.emit('error', deserializeError(data.error));
             resolve(data);
-        })));
+        }));
     }
 
     function send(data) {
         ws.send(JSON.stringify(data));
     }
 
-    await open();
+    await raceCancel(open);
 
     //wait for initial server message
-    let initData = await get();
+    let initData = await raceCancel(get);
     if (initData.type !== 'init')
         throw new Error('Server did not ask to init');
     if (initData.version !== config.version)//verify version match
@@ -71,7 +61,7 @@ export default async function connect(username, password, url = config.defaultSe
     });
 
     //wait for login result
-    let response = await get();
+    let response = await raceCancel(get);
     if (response.type !== 'loginSuccess')
         throw new Error('Unknown loginReducer error');
 
@@ -90,6 +80,6 @@ export default async function connect(username, password, url = config.defaultSe
         send: client.send,
         s: client.s,
 
-        quit:client.quit,
+        quit: client.quit,
     }
 }
