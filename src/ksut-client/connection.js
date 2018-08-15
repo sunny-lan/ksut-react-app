@@ -6,16 +6,15 @@ import {extract} from '../util';
 
 export default async function connect(username, password, url = config.defaultServer) {
     const emitter = new EventEmitter();
-    emitter.on('error',()=>{});//TODO bug report
 
     let lastError;
 
     //error handling stuff
     emitter.once('error', error => lastError = error);
     function createCancellable(action) {
+        //if an error already occurred no further code should run
+        if (lastError) throw lastError;
         return new Promise((resolve, reject) => {
-            //if an error already occurred no further code should run
-            if (lastError) reject(lastError);
             //if an error occurs during the async, it should reject
             emitter.once('error', reject);
             //if the async completes, it shouldn't reject

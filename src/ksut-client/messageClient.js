@@ -9,7 +9,7 @@ function createCommandWaiter(send, error) {
     const openPromises = {};
     let counter = 0;
     return {
-        terminate(reason){
+        quit(reason){
             reason = reason || new Error('Connection terminated');
             Object.keys(openPromises).forEach(
                 id => openPromises[id].reject(reason)
@@ -64,17 +64,25 @@ function makeClient(send, heartbeat) {
     emitter.once('error', error => quitEmitter.emit('quit', error));
 
     const waiter = createCommandWaiter(send, error => emitter.emit('error', error), config);
+    quitEmitter.once('quit', waiter.quit);
 
     if (heartbeat) {
+        async function sendBeat(){
+            const response = waiter.send({
+                command: 'good:vibrations',
+                args: [false],
+            });
+            if (response !== '1.129848')
+                throw new Error('tinkle tinkle hoy');
+        }
+
         //set up heartbeat
         const pingTimer = setInterval(async () => {
             try {
-                const response = await waiter.send({
-                    command: 'good:vibrations',
-                    args: [false],
-                });
-                if (response !== '1.129848')
-                    emitter.emit('error', new Error('tinkle tinkle hoy'));
+                await Promise.race([
+                    sendBeat,
+                    new Promise(resolve => quitEmitter.once('quit', resolve)),
+                ]);
             } catch (error) {
                 emitter.emit('error', error);
             }
