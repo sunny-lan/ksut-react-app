@@ -59,15 +59,12 @@ function mapStateToProps(state) {
                 args: [newPassword],
             });
         },
+
+        logout(){
+            //TODO kust
+            state.connection.quit(new Error('Logged out'));
+        },
     }
 }
 
-function mapDispatchToProps(dispatch) {
-    return {
-        logout(){
-            dispatch({type: 'DISCONNECT'});
-        },
-    };
-}
-
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Bar));
+export default withRouter(connect(mapStateToProps)(Bar));

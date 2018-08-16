@@ -68,7 +68,7 @@ function makeClient(send, heartbeat) {
 
     if (heartbeat) {
         async function sendBeat() {
-            const response = waiter.send({
+            const response = await waiter.send({
                 command: 'good:vibrations',
                 args: [false],
             });
@@ -80,13 +80,12 @@ function makeClient(send, heartbeat) {
         const pingTimer = setInterval(() => {
             let _callback;
             Promise.race([
-                sendBeat,
+                sendBeat(),
                 new Promise(resolve => quitEmitter.on('quit', _callback = resolve)),
             ]).catch(error => emitter.emit('error', error)).finally(() => {
                 if (_callback)
                     quitEmitter.removeListener('quit', _callback)
             });
-
         }, config.timeout);
 
         quitEmitter.once('quit', () => clearInterval(pingTimer));
@@ -101,7 +100,7 @@ function makeClient(send, heartbeat) {
         },
         send: waiter.send,
 
-        s(command, args){
+        s(command, ...args){
             return waiter.send({command, args});
         },
 

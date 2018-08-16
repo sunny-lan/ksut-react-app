@@ -1,7 +1,7 @@
-const EventEmitter = require('events');
-
 const {getName, getNamespace} = require('./namespace');
 const {extract} = require('../util');
+
+const EventEmitter = require('events');
 
 function wrapClient(client) {
     const channelEmitter = new EventEmitter(),

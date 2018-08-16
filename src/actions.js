@@ -1,4 +1,4 @@
-import connect from './ksut-client/connection';
+import connect from './ksut-client/websocketClient';
 import specs from './ksut-client/specs';
 import {namespace} from './ksut-client/namespace';
 import {coalesce, get} from './util';
@@ -18,7 +18,7 @@ export function login(url) {
         const state = getState();
         const connection = wrapClient(await connect(state.login.username, state.login.password, url));
         //TODO perform login retry on error
-        connection.once('error', (error) => dispatch({type: 'DISCONNECT', error}));
+        connection.once('quit', error => dispatch({type: 'DISCONNECT', error}));
         connection.namespace.on('write', message => dispatch({type: 'REDIS', ...message}));
         dispatch({type: 'LOGIN', success: true, connection});
     }, {type: 'LOGIN'});

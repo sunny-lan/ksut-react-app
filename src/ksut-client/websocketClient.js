@@ -1,13 +1,14 @@
 import EventEmitter from 'events';
 import config from './config';
 import deserializeError from 'deserialize-error';
-import createClient from './messageClient';
 import {extract} from '../util';
+import createClient from './messageClient';
 
 export default async function connect(username, password, url = config.defaultServer) {
     const emitter = new EventEmitter();
+    emitter.once('error', error => emitter.emit('quit', error));
     //error handling stuff
-    const pError = new Promise((_, reject) => emitter.once('error', reject));
+    const pError = new Promise((_, reject) => emitter.once('quit', reject));
 
     function raceCancel(callback, ...args) {
         return Promise.race([pError, Promise.resolve()])
@@ -17,6 +18,7 @@ export default async function connect(username, password, url = config.defaultSe
     const ws = new WebSocket(url);
     ws.onclose = ws.onerror = () => emitter.emit('error', new Error('Websocket failure'));
     emitter.once('error', () => ws.onclose = ws.onerror = undefined);
+    emitter.once('quit', () => ws.close());
 
     //websocket wrappers
     function open() {
@@ -70,6 +72,7 @@ export default async function connect(username, password, url = config.defaultSe
     emitter.once('error', client.quit);
     client.on('error', error => emitter.emit('error', error));
     client.on('message', (...args) => emitter.emit('message', ...args));
+    emitter.once('quit', client.quit);
 
     //wait for server responses
     on(client.receive);
@@ -80,6 +83,8 @@ export default async function connect(username, password, url = config.defaultSe
         send: client.send,
         s: client.s,
 
-        quit: client.quit,
+        quit(reason){
+            emitter.emit('quit', reason);
+        }
     }
 }

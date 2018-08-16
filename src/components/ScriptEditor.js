@@ -53,7 +53,7 @@ const ScriptEditor = createReactClass({
                 mode="javascript"
                 theme="solarized_light"
                 name="sdfkjh"
-                onChange={this.props.onChanged}
+                onChange={this.props.onChange}
                 value={this.props.code}
                 fontSize={14}
                 showPrintMargin={false}
@@ -102,7 +102,7 @@ function mapDispatchToProps(dispatch, ownProps) {
                 args: ['script-code', ownProps.id]
             }));
         },
-        onChanged(newCode){
+        onChange(newCode){
             dispatch({type: 'SCRIPT_EDIT', newCode, id: ownProps.id});
         },
         onSave(){
