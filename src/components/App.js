@@ -2,9 +2,11 @@ import React from 'react';
 import createReactClass from 'create-react-class';
 import {connect} from 'react-redux';
 import {Fabric} from 'office-ui-fabric-react/lib/Fabric';
-import LoginPage from './components/LoginPage';
-import HomePage from './components/HomePage';
+import LoginPage from './LoginPage';
+import HomePage from './HomePage';
 import {withRouter} from 'react-router-dom';
+import {NotificationContainer} from 'react-notifications';
+import 'react-notifications/lib/notifications.css';
 
 const styles = {
     app: {
@@ -30,6 +32,7 @@ const App = createReactClass({
         }
         return <Fabric style={styles.app}>
             {page}
+            <NotificationContainer/>
         </Fabric>
     },
 });

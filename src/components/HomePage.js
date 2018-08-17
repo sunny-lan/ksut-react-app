@@ -5,6 +5,7 @@ import ScriptContainer from './InstanceContainer';
 import ScriptChooser from './ScriptChooser';
 import Bar from './Bar';
 import DeveloperPage from './DeveloperPage';
+import IDMenu from './IDMenu';
 
 const styles = {
     main: {
@@ -41,6 +42,7 @@ function HomePage(props) {
                 <Route component={Dashboard}/>
             </Switch>
         </div>
+        <IDMenu/>
     </div>
 }
 

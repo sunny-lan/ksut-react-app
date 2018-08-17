@@ -1,6 +1,6 @@
 import React from 'react';
 import createReactClass from 'create-react-class';
-import Sidebar from './ScriptExplorer';
+import ScriptExplorer from './ScriptExplorer';
 import ScriptEditor from './ScriptEditor';
 import {BrowserView, MobileView, isBrowser} from 'react-device-detect';
 
@@ -45,7 +45,7 @@ const HomePage = createReactClass({
 
         return <div>
             <BrowserView style={styles.main}>
-                <Sidebar onScriptClick={this.handleScriptClick}/>
+                <ScriptExplorer onScriptClick={this.handleScriptClick}/>
                 <div style={styles.content}>{content}</div>
             </BrowserView>
             <MobileView>

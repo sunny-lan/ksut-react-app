@@ -19,7 +19,7 @@ export function login(url) {
         const connection = wrapClient(await connect(state.login.username, state.login.password, url));
         //TODO perform login retry on error
         connection.once('quit', error => dispatch({type: 'DISCONNECT', error}));
-        connection.namespace.on('write', message => dispatch({type: 'REDIS', ...message}));
+        connection.namespace.on('write', message => dispatch({ ...message,type: 'REDIS'}));
         dispatch({type: 'LOGIN', success: true, connection});
     }, {type: 'LOGIN'});
 }

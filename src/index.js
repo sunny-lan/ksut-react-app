@@ -3,7 +3,7 @@ import {render} from 'react-dom'
 import {Provider} from 'react-redux'
 import {initializeIcons} from 'office-ui-fabric-react/lib/Icons';
 
-import App from './App';
+import App from './components/App';
 import configureStore from './store';
 
 import registerServiceWorker from './registerServiceWorker';

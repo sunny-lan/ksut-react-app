@@ -6,6 +6,7 @@ import {Spinner} from 'office-ui-fabric-react/lib/Spinner';
 import {Label} from "office-ui-fabric-react/lib/Label";
 import {login} from '../actions';
 import {Link} from 'office-ui-fabric-react/lib/Link';
+import {NotificationManager} from 'react-notifications';
 
 const styles = {
     main: {
@@ -26,25 +27,29 @@ const styles = {
     }
 };
 
+async function register() {
+    const response = await fetch('/createAccount', {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            username: prompt('enter new username'),
+            password: prompt('enter new password'),
+        })
+    });
+    if (response.status === 200)
+        NotificationManager.success('Account created');
+    else
+        NotificationManager.error("Couldn't create account");
+
+}
+
 function render(props) {
     function handleKeyPress(keyPressed) {
         if (keyPressed.key === 'Enter')
             props.onLogin();
-    }
-
-    function register() {
-        fetch('/createAccount', {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                username: prompt('enter new username'),
-                password: prompt('enter new password'),
-            })
-        }).then(response => alert(response.status))
-            .catch(e => alert(e.message));
     }
 
     return <div style={styles.main}>

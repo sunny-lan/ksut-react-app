@@ -4,6 +4,7 @@ import {connect} from 'react-redux';
 import {get} from '../util';
 import {fetchAndSubscribe, unsubscribe} from '../actions';
 import {namespace} from '../ksut-client/namespace';
+import {ContextMenuTrigger} from "react-contextmenu";
 
 const style = {
     whiteSpace: 'nowrap',
@@ -20,8 +21,17 @@ const ID = createReactClass({
         this.props.onUnload();
     },
 
+    collect(){
+        return {
+            name:this.props.name,
+            id:this.props.id,
+        }
+    },
+
     render(){
-        return <div style={style}>{this.props.name || this.props.id}</div>;
+        return <ContextMenuTrigger style={style} id='MENU_ID' collect={this.collect}>
+            {this.props.name || this.props.id}
+        </ContextMenuTrigger>
     },
 });
 
