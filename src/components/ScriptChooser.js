@@ -43,23 +43,26 @@ const ScriptChooser = createReactClass({
         });
     },
 
-    doSearch(){
+    async doSearch(){
         this.setState({
             ...this.state,
             searching: true,
             timeout: undefined,
         });
-        this.props.search(this.state.search)
-            .then(searchResults => this.setState({
+        try {
+            const searchResults = await this.props.search(this.state.search);
+            this.setState({
                 ...this.state,
                 searching: false,
                 searchResults,
-            }))
-            .catch(error => this.setState({
+            });
+        } catch (error) {
+            this.setState({
                 ...this.state,
                 searching: false,
                 errorMessage: error.message,
-            }))
+            });
+        }
     },
 
     renderCell(item){

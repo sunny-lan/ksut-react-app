@@ -7,6 +7,7 @@ import {Label} from "office-ui-fabric-react/lib/Label";
 import {login} from '../actions';
 import {Link} from 'office-ui-fabric-react/lib/Link';
 import {NotificationManager} from 'react-notifications';
+import deserializeError from 'deserialize-error';
 
 const styles = {
     main: {
@@ -28,21 +29,25 @@ const styles = {
 };
 
 async function register() {
-    const response = await fetch('/createAccount', {
-        method: 'POST',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            username: prompt('enter new username'),
-            password: prompt('enter new password'),
-        })
-    });
-    if (response.status === 200)
-        NotificationManager.success('Account created');
-    else
-        NotificationManager.error("Couldn't create account");
+    try {
+        const response = await fetch('/createAccount', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: prompt('enter new username'),
+                password: prompt('enter new password'),
+            }),
+        });
+        if (response.status === 200)
+            NotificationManager.success('Account created');
+        else
+            throw deserializeError((await response.json()).error);
+    }catch(error) {
+        NotificationManager.error(error.message, "Couldn't create account");
+    }
 
 }
 

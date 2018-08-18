@@ -7,6 +7,8 @@ import {namespace} from '../ksut-client/namespace';
 import {Link} from 'react-router-dom';
 import {DefaultButton} from 'office-ui-fabric-react/lib/Button';
 import ID from './ID';
+import {NotificationManager} from 'react-notifications';
+import RenameDialog from './RenameDialog';
 
 let styles = {
     common: {
@@ -59,11 +61,11 @@ styles = {
 
 const ScriptContainer = createReactClass({
     getInitialState(){
-        return {}
+        return {dialogHidden: true};
     },
 
     componentDidCatch(error, info) {
-        this.setState({error: true});
+        this.setState({error: true, dialogHidden: true});
     },
 
     componentDidMount(){
@@ -83,6 +85,33 @@ const ScriptContainer = createReactClass({
 
         if (nextProps.scriptID && this.props.scriptID !== nextProps.scriptID)
             nextProps.loadScript(nextProps.scriptID);
+    },
+
+    async handleDelete(){
+        try {
+            await this.props.onDelete();
+            NotificationManager.success('Instance deleted');
+        } catch (error) {
+            NotificationManager.error(error, 'Failed to delete instance');
+        }
+    },
+
+    handleRename(){
+        this.setState({dialogHidden: false});
+    },
+
+    async handleReload(){
+        try {
+            this.props.loadScript(this.props.scriptID);
+            await this.props.restart();
+            NotificationManager.success('Instance reloaded');
+        }catch(error){
+            NotificationManager.error(error, 'Failed to reload instance');
+        }
+    },
+
+    handleDialogDismiss(){
+        this.setState({dialogHidden: true});
     },
 
     render()
@@ -109,15 +138,15 @@ const ScriptContainer = createReactClass({
                 items: [
                     {
                         key: 'delete', text: 'Delete',
-                        onClick: () => this.props.onDelete().catch(e => alert(e.message))
+                        onClick: this.handleDelete,
                     },
                     {
                         key: 'rename', text: 'Rename',
-                        onClick: () => this.props.onRename(prompt('enter new name')).catch(e => alert(e.message)),
+                        onClick: this.handleRename,
                     },
                     {
                         key: 'reload', text: 'Reload',
-                        onClick: ()=>this.props.loadScript(this.props.scriptID),
+                        onClick: this.handleReload,
                     }
                 ],
             }}
@@ -127,20 +156,32 @@ const ScriptContainer = createReactClass({
             <ID style={styles.id} id={this.props.instanceID}/>
         </Link>;
 
+        let html;
+
         if (this.props.size === 'compact')
-            return <div style={styles.compact}>
+            html = <div style={styles.compact}>
                 {link}
                 {content}
                 {contextMenu}
             </div>;
         else
-            return <div style={this.props.maximized ? styles.maximized : styles.medium}>
+            html = <div style={this.props.maximized ? styles.maximized : styles.medium}>
                 <div style={styles.controlBar}>
                     {link}
                     {contextMenu}
                 </div>
                 {content}
             </div>;
+
+        return <div>
+            {html}
+            <RenameDialog
+                id={this.props.instanceID}
+                name={this.props.name}
+                hidden={this.state.dialogHidden}
+                onDismiss={this.handleDialogDismiss}
+            />
+        </div>
     }
 });
 
@@ -153,19 +194,20 @@ function mapStateToProps(state, ownProps) {
     const scriptID = get(state, 'redis', 'instance-script', ownProps.instanceID);
     const component = get(state, 'scripts', scriptID, 'component');
     return {
+        name: get(state, 'redis', 'id-name', ownProps.id),
         scriptID,
         component,
         size,
-        async onRename(name){
-            await state.connection.send({
-                command: 'redis:hset',
-                args: ['id-name', ownProps.instanceID, name],
-            });
-        },
         async onDelete(){
             await state.connection.send({
                 command: 'script:destroyInstance',
                 args: [ownProps.instanceID],
+            });
+        },
+        async restart(){
+            await state.connection.send({
+                command:'redis:publish',
+                args:[`restart:${ownProps.instanceID}`]
             });
         },
     };
@@ -178,10 +220,15 @@ function mapDispatchToProps(dispatch, ownProps) {
                 command: 'hget',
                 args: ['instance-size', ownProps.instanceID],
             }));
+            dispatch(fetchAndSubscribe({
+                command: 'hget',
+                args: ['id-name', ownProps.id],
+            }));
         },
         onUnload(){
             dispatch(unsubscribe(namespace('write', 'instance-size')));
             dispatch(unsubscribe(namespace('write', 'instance-script')));
+            dispatch(unsubscribe(namespace('write', 'id-name')));
         },
         loadScriptID(){
             dispatch(fetchAndSubscribe({

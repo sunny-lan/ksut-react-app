@@ -3,6 +3,7 @@ import {CommandBar} from 'office-ui-fabric-react/lib/CommandBar';
 import {withRouter} from 'react-router-dom';
 import {connect} from 'react-redux';
 import {get} from '../util';
+import {NotificationManager} from 'react-notifications';
 import {isBrowser} from 'react-device-detect';
 
 const styles = {
@@ -25,28 +26,31 @@ function Bar(props) {
         return item;
     });
 
+    async function handlePasswordChange() {
+        try {
+            await props.changePassword(prompt("enter a new password"));
+            NotificationManager.success('Password changed');
+        }catch(error){
+            NotificationManager.error(error.message, 'Password change failed');
+        }
+    }
+
     return <CommandBar
         style={styles.bar}
         items={items}
-        farItems={[
-            {
-                key: 'account',
-                name: props.username,
-                subMenuProps: {
-                    items: [
-                        {key: 'logout', name: 'Logout', onClick: props.logout},
-                        {
-                            key: 'settings', name: 'Password',
-                            onClick(){
-                                props.changePassword(prompt("enter a new password"))
-                                    .then(() => alert('password changed'))
-                                    .catch(e => alert(e));
-                            }
-                        },
-                    ]
-                },
+        farItems={[{
+            key: 'account',
+            name: props.username,
+            subMenuProps: {
+                items: [
+                    {key: 'logout', name: 'Logout', onClick: props.logout},
+                    {
+                        key: 'settings', name: 'Password',
+                        onClick: handlePasswordChange,
+                    },
+                ]
             },
-        ]}
+        }]}
     />
 }
 
@@ -61,7 +65,7 @@ function mapStateToProps(state) {
         },
 
         logout(){
-            //TODO kust
+            //TODO remove the error
             state.connection.quit(new Error('Logged out'));
         },
     }

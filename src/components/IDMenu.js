@@ -1,11 +1,7 @@
 import React from 'react';
 import createReactClass from 'create-react-class';
-import {connect} from 'react-redux';
 import {ContextMenu, MenuItem} from "react-contextmenu";
-import {Dialog, DialogType, DialogFooter} from 'office-ui-fabric-react/lib/Dialog';
-import {PrimaryButton, DefaultButton} from 'office-ui-fabric-react/lib/Button';
-import {TextField} from 'office-ui-fabric-react/lib/TextField';
-import {NotificationManager} from 'react-notifications';
+import  RenameDialog from './RenameDialog';
 
 const style = {
     menu: {
@@ -24,33 +20,19 @@ const style = {
 
 const IDMenu = createReactClass({
     getInitialState(){
-        return {dialogOpen: false};
+        return {dialogHidden: true};
     },
 
     handleRenameClick(e, data){
         this.setState({
-            dialogOpen: true,
-            newName: data.name,
+            dialogHidden: false,
             id: data.id,
+            name: data.name,
         });
     },
 
-    async save(){
-        try {
-            await this.props.rename(this.state.id, this.state.newName);
-        } catch (error) {
-            NotificationManager.error(error.message, 'Rename failed');
-        } finally {
-            this.closeDialog();
-        }
-    },
-
-    closeDialog(){
-        this.setState({dialogOpen: false});
-    },
-
-    handleTextChange(e, newName){
-        this.setState({...this.state, newName});
+    handleDismiss(){
+        this.setState({dialogHidden: true});
     },
 
     render(){
@@ -60,37 +42,14 @@ const IDMenu = createReactClass({
                     <div style={style.menuItem}><p>Rename</p></div>
                 </MenuItem>
             </ContextMenu>
-            <Dialog
-                hidden={!this.state.dialogOpen}
-                onDismiss={this.closeDialog}
-                dialogContentProps={{
-                    type: DialogType.normal,
-                    title: 'Rename',
-                }}
-            >
-                <TextField
-                    placeholder={this.state.id}
-                    value={this.state.newName}
-                    onChange={this.handleTextChange}
-                />
-                <DialogFooter>
-                    <PrimaryButton onClick={this.save} text="Save"/>
-                    <DefaultButton onClick={this.closeDialog} text="Cancel"/>
-                </DialogFooter>
-            </Dialog>
+            <RenameDialog
+                id={this.state.id}
+                value={this.state.name}
+                hidden={this.state.dialogHidden}
+                onDismiss={this.handleDismiss}
+            />
         </div>
     },
 });
 
-function mapStateToProps(state) {
-    return {
-        async rename(id, name){
-            if (name)
-                await state.connection.s('redis:hset', 'id-name', id, name);
-            else
-                await state.connection.s('redis:hdel', 'id-name', id);
-        },
-    };
-}
-
-export default connect(mapStateToProps)(IDMenu);
+export default IDMenu;
